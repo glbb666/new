@@ -15,10 +15,22 @@ console.log('arguments:'+JSON.stringify(process.argv));
 console.log('cwd:'+process.cwd())
 
 //切换当前工作目录
-var d = '\WebstormProjects';
+var d = '/private/tmp';
+//检测运行环境
 if(process.platform === 'win32'){
     //如果是Windows,切换到C:\Windows\System32
     d = 'C:\\Windows\\System32';
 }
+//chdir=>切换工作目录
 process.chdir(d);
 console.log('cwd: ' + process.cwd());
+
+//在下一次事件响应中执行代码
+process.nextTick(function(){
+    console.log('nextTick callback!')
+})
+console.log('nextTick was set')
+//程序即将退出时的回调函数
+process.on('exit',function(code){
+    console.log('about to exit with code:'+code);
+})
