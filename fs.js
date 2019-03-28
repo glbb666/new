@@ -1,12 +1,12 @@
 'use strict'
+//Node.js内置的fs模块就是文件系统模块，负责读写文件。
+
+//fs同时提供了同步方法和异步方法
 
 //jquery提供的getJSON就是异步方法
 // $.getJSON('http://example.com/ajax',function(data){
 //     console.log('IO结果返回后执行')
 // })
-
-
-//Node.js内置的fs模块就是文件系统模块，负责读写文件。
 
 //异步读取文本文件
 var fs = require('fs');
