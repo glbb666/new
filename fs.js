@@ -1,17 +1,12 @@
 'use strict'
-//使用$需要
-//npm i jsdom -g
-//npm i jquery -g
-// const jsdom = require('jsdom');
-// const { JSDOM } = jsdom;
-// const { window } = new JSDOM(`<!DOCTYPE html>`);
-// var $ = require('jquery')(window);
-// console.log($)
 
 //jquery提供的getJSON就是异步方法
 // $.getJSON('http://example.com/ajax',function(data){
 //     console.log('IO结果返回后执行')
 // })
+
+
+//Node.js内置的fs模块就是文件系统模块，负责读写文件。
 
 //异步读取文本文件
 var fs = require('fs');
