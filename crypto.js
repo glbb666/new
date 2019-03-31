@@ -36,8 +36,8 @@ function aesEncrypt(data,key){
     const cipher = crypto.createCipher('aes192',key);
     //使用参数data更新要加密的内容，其编码方式由参数input_encoding指定，可以为 'utf8', 'ascii'或者'binary'。参数output_encoding指定了已加密内容的输出编码方式，可以为 'binary', 'base64'或'hex'。
     var crypted = cipher.update(data,'utf8','hex');
-    //返回所有剩余的加密内容，output_encoding输出编码为'binary', 'ascii'或'utf8'其中之一。
-    crypted =cipher.final('hex');
+    //返回所有剩余的加密内容，output_encoding输出编码为'binary', 'ascii'或'utf8'其中之一。一旦cipher.final()方法已被调用,对象就不能再用于加密数据
+    crypted +=cipher.final('hex');
     return crypted;
 }
 function aesDecrypt(encrypted,key){
@@ -58,27 +58,26 @@ console.log('Plain text:'+data);
 console.log('Encrypted text:'+encrypted);
 console.log('Decrypted text:'+decrypted);
 
-//DH算法：一种密钥交换协议，密钥是双法国协商计算出来的
+// Diffie-Hellman（简称DH）是密钥交换算法之一，它的作用是保证通信双方在非安全的信道中安全地交换密钥。目前DH最重要的应用场景之一，就是在HTTPS的握手阶段，客户端、服务端利用DH算法交换对称密钥。
 
-//小明的密钥
-// var ming = crypto.createDiffieHellman(512);
-// var ming_keys =ming.generateKeys();
+var primeLength = 1024//素数p的长度
+var generator = 5;//生成器
 
-// var prime = ming.getPrime();
-// var generator = ming.getGenerator();
+//创建客户端的DH实例,根据primelength创造一个素数模，generator的默认值是2，这就是公钥
+var client = crypto.createDiffieHellman(primeLength,generator);
+//产生公、私钥对，即单项函数值，Ya = a^Xa mod p
+var clientKey = client.generateKeys();
+console.log(client.getPrime());
+//创建服务端的DH实例，采用跟客户端相同的素数模和生成器
+var server = crypto.createDiffieHellman(client.getPrime(),client.getGenerator());
+//产生公、私钥对，即单项函数值， Yb = a^Xb mod P
+var serverKey = server.generateKeys();
 
-// console.log('Prime::'+prime.toString('hex'));
-// console.log('Generator:'+generator.toString('hex'));
+//利用对方给的单向函数值，公钥和自己的私钥，计算 Ka = Yb^Xa mod p
+var clientSecret = client.computeSecret(server.getPublicKey());
+var serverSecret = server.computeSecret(client.getPublicKey());
 
-// //小红的密钥
-// var hong = crypto.creareDiffieHellman(prime,generator);
-// var hong_keys = hong.generateKeys();
- 
-// //exchange and generate secret;
-// var ming_secret = ming.computeSecret(hong_keys);
-// var hong_secret = hong.computeSecret(ming_Keys);
-
-// //print secret:
-// console.log('Secret of Xiao Ming:'+ming_secret.toString('hex'));
-// console.log('Secret of Xiao Hong:'+hong_secret.toString('hex'));
-
+//由于素数p是动态生成的，所以每次打印都不一样
+//但是clientSecret === serverSecret
+console.log(clientSecret.toString('hex'));
+console.log(serverSecret.toString('hex'));
