@@ -81,3 +81,5 @@ var serverSecret = server.computeSecret(client.getPublicKey());
 //但是clientSecret === serverSecret
 console.log(clientSecret.toString('hex'));
 console.log(serverSecret.toString('hex'));
+
+//RSA
