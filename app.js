@@ -72,19 +72,82 @@
 // server.listen(1337, "127.0.0.1");
 
 //自定义事件并将其触发
+// var http = require('http');
+// var server = http.createServer();
+// server.on('request', function(req,res) { 
+//     if(req.url!=="/favicon.ico"){
+//       console.log(req.url);
+//     }
+//     res.end();
+//   });
+// server.on('customEvent',function(arg1,arg2,arg3){
+//     console.log('自定义事件触发');
+//     console.log(arg1);
+//     console.log(arg2);
+//     console.log(arg3);
+// })
+// server.emit('customEvent','a','b','c');
+// server.listen(1337,'127.0.0.1');
+
+// 获取指定事件的事件处理函数的数量
+// var http = require('http');            // 
+// var events = require('events');
+// var server = http.createServer();
+// server.on('request', function(req,res) {
+//     if(req.url!=="/favicon.ico")
+//       console.log('接收到客户端请求。');
+//                   });
+//     server.on('request', function(req,res) { 
+//       if(req.url!=="/favicon.ico"){
+//         console.log(req.url);
+//       }
+//       res.end();
+//     });
+//     server.on('request', function(req,res) {
+//       if(req.url!=="/favicon.ico")
+//         console.log('发送响应完毕。');
+//                     });
+// server.listen(1337, "127.0.0.1");
+// console.log(events.EventEmitter.listenerCount(server,'request'));
+
+// 监听newListener事件及removeListener事件
+// var http = require('http');            
+
+// var server = http.createServer();      
+
+// server.on('removeListener',function(e,f){
+//   console.log(" 对"+e+" 事件取消事件处理函数");
+//               console.log(f);
+// });
+// server.on('newListener',function(e,f){
+//   console.log(" 对"+e+" 事件添加事件处理函数");
+//               console.log(f);
+// });
+// var testFunction=function(req,res) {
+//   if(req.url!=="/favicon.ico")
+//     console.log('发送响应完毕。');
+//     };
+// server.on('request', function(req,res) {
+//     if(req.url!=="/favicon.ico")
+//     console.log('接收到客户端请求。');
+//                 });
+// server.on('request', function(req,res) { 
+//     if(req.url!=="/favicon.ico"){
+//         console.log(req.url);
+//     }
+//         res.end();
+//       });
+// server.on('request',testFunction);
+// server.removeListener('request',testFunction);
+// server.listen(1337, "127.0.0.1");
+
+//事件调试
+console.log('hello, world');
+function foo() {
+  console.log('hello, foo');
+  return 100;
+}
+var bar = 'This is a pen.';
 var http = require('http');
-var server = http.createServer();
-server.on('request', function(req,res) { 
-    if(req.url!=="/favicon.ico"){
-      console.log(req.url);
-    }
-    res.end();
-  });
-server.on('customEvent',function(arg1,arg2,arg3){
-    console.log('自定义事件触发');
-    console.log(arg1);
-    console.log(arg2);
-    console.log(arg3);
-})
-server.emit('customEvent','a','b','c');
-server.listen(1337,'127.0.0.1');
+var i = foo();
+console.log(i);
