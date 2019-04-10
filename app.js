@@ -10,8 +10,13 @@
 // console.timeEnd('small loop');
 // // console.trace('trace');
 // console.assert(1==false,'error');
-var testModule = require('./testModule.js');
-if(module === require.main) {
-    console.log('This is the main module of application.');
-  }
-require.resolve('./testModule.js')
+// var testModule = require('./testModule.js');
+// if(module === require.main) {
+//     console.log('This is the main module of application.');
+//   }
+// require.resolve('./testModule.js')
+// var testModule1=require('./testModule.js');
+// var testModule2=require('./testModule.js');
+// delete require.cache[require.resolve('./testModule.js')];
+// var testModule3=require('./testModule.js');
+// var testModule1=require('./test/testModule.js');
