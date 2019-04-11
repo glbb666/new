@@ -130,12 +130,35 @@ var fs = require('fs');
 //         })
 //     })
 // })
-fs.open('./sample.txt','r',function(err,fd){
-    var buf = new Buffer(255);
-    var bytesRead = fs.readFileSync(fd,buf,0,9,3);
-    console.log(bytesRead);
-    console.log(buf.slice(0,bytesRead).toString())
-})
+// fs.open('./sample.txt','r',function(err,fd){
+//     var buf = new Buffer(255);
+//     var bytesRead = fs.readSync(fd,buf,0,9,3);
+//     console.log(bytesRead);
+//     console.log(buf.slice(0,bytesRead).toString())
+// })
+// var buf = new Buffer('我喜爱编程');
+// fs.open('sample.txt','w',function(err,fd){
+//     fs.write(fd,buf,3,9,null,function(err,written,buffer){
+//         if(err) console.log('写文件操作失败')
+//         else console.log('写文件操作成功')
+//         //从文件的当前被写入位置处开始写入文件
+//         fs.write(fd,buf,12,3,null,function(err,written,buffer){
+//             if(err) console.log('写文件操作失败');
+//             else console.log('写文件操作成功')
+//         })
+//     })
+// })
+// var buf = new Buffer('我喜爱编程');
+// fs.open('sample.txt','w',function(err,fd){
+//     fs.write(fd,buf,0,15,null,function(err,written,buffer){
+//         if(err) console.log('写文件操作失败')
+//         else console.log('写文件操作成功')
+//         //把内存缓冲区中的数据全部书写到文件中
+//         fs.fsync(fd,function(){});
+//         //关闭文件
+//         fs.close(fd,function(){});
+//     })
+// })
 // //stat
 // //如果我们要获取文件大小，创建时间等信息，可以使用fs.stat(),它返回一个stat对象，能告诉我们文件或目录的详细信息
 
