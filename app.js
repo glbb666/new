@@ -142,12 +142,30 @@
 // server.listen(1337, "127.0.0.1");
 
 //事件调试
-console.log('hello, world');
-function foo() {
-  console.log('hello, foo');
-  return 100;
-}
-var bar = 'This is a pen.';
-var http = require('http');
-var i = foo();
-console.log(i);
+// console.log('hello, world');
+// function foo() {
+//   console.log('hello, foo');
+//   return 100;
+// }
+// var bar = 'This is a pen.';
+// var http = require('http');
+// var i = foo();
+// console.log(i);
+// var foo = require('./foo.js');
+// var myFoo = new foo("Tom",40);
+// console.log('获取修改前的私有变量值');
+// console.log(myFoo.GetName());
+// console.log(myFoo.GetAge());
+// console.log('获取修改前的公有变量值')
+// console.log(myFoo.name);
+// console.log(myFoo.age);
+// console.log(myFoo.staticName);
+// console.log(foo.staticName);
+// foo.staticName = 'Static Name';
+// foo.staticFunction()
+
+// 使用目录来管理模块
+// var foo = require('foo')
+
+// 模块对象的属性
+var foo = require('./foo.js');
