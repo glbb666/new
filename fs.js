@@ -114,21 +114,27 @@ var fs = require('fs');
 // var fd = fs.openSync('sample.txt','r')
 //read方法
 
-fs.open('sample.txt','r',function(err,fd){
-    var buf = new Buffer(255);
-    //一个汉字的utf编码为三字节数据
-    //开始写的位置，读的长度，开始读的位置
-    fs.read(fd,buf,0,9,null,function(err,bytesRead,buffer){
-        console.log(buffer.slice(0,bytesRead).toString());
-        //从文件的当前读取位置继续往下读取
-        fs.read(fd,buf,0,9,3,function(err,bytesRead,buffer){
-            console.log(buffer.slice(0,bytesRead).toString())
-            fs.read(fd,buf,0,9,null,function(err,bytesRead,buffer){
-                console.log(buffer.slice(0,bytesRead).toString())
+// fs.open('sample.txt','r',function(err,fd){
+//     var buf = new Buffer(255);
+//     //一个汉字的utf编码为三字节数据
+//     //开始写的位置，读的长度，开始读的位置
+//     fs.read(fd,buf,0,9,null,function(err,bytesRead,buffer){
+//         console.log(buffer.slice(0,bytesRead).toString());
+//         //从文件的当前读取位置继续往下读取
+//         fs.read(fd,buf,0,9,3,function(err,bytesRead,buffer){
+//             console.log(buffer.slice(0,bytesRead).toString())
+//             fs.read(fd,buf,0,9,null,function(err,bytesRead,buffer){
+//                 console.log(buffer.slice(0,bytesRead).toString())
                 
-            })
-        })
-    })
+//             })
+//         })
+//     })
+// })
+fs.open('./sample.txt','r',function(err,fd){
+    var buf = new Buffer(255);
+    var bytesRead = fs.readFileSync(fd,buf,0,9,3);
+    console.log(bytesRead);
+    console.log(buf.slice(0,bytesRead).toString())
 })
 // //stat
 // //如果我们要获取文件大小，创建时间等信息，可以使用fs.stat(),它返回一个stat对象，能告诉我们文件或目录的详细信息
