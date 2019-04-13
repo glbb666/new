@@ -30,3 +30,13 @@ var fs = require('fs');
 // })
 
 //获取文件或者目录的绝对路径
+//  var file =
+
+ //用unpipe取消目标文件的写入操作
+ var file = fs.createReadStream('./1.jpg');
+ var out =fs.createWriteStream('./b.jpg');
+ file.pipe(out,{end:false});
+ setTimeout(() => {
+    file.unpipe(out);
+    out.end(); 
+ }, 1); 
