@@ -30,13 +30,24 @@ var fs = require('fs');
 // })
 
 //获取文件或者目录的绝对路径
-//  var file =
+// var cache = {'/etc':'/etc'};
+// fs.realpath('./sample.txt',function(err,resolvePath){
+//    console.log(resolvePath);
+// })
 
+// var resolvePath = fs.realpathSync('./sample.txt',cache)
+// console.log(resolvePath)
+
+//修改文件访问时间以及修改时间
+fs.utimes('./sample.txt',new Date(),new Date(),function(err){
+   if(err) console.log('修改文件时间操作失败');
+   console.log('修改文件时间操作成功')
+})
  //用unpipe取消目标文件的写入操作
- var file = fs.createReadStream('./1.jpg');
- var out =fs.createWriteStream('./b.jpg');
- file.pipe(out,{end:false});
- setTimeout(() => {
-    file.unpipe(out);
-    out.end(); 
- }, 1); 
+//  var file = fs.createReadStream('./1.jpg');
+//  var out =fs.createWriteStream('./b.jpg');
+//  file.pipe(out,{end:false});
+//  setTimeout(() => {
+//     file.unpipe(out);
+//     out.end(); 
+//  }, 1); 
