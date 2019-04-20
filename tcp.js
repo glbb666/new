@@ -122,9 +122,12 @@ client.connect(8431,'localhost',function(){
     console.log('已连接到服务器端');
     client.write('你好')
     //指定tcp客户端与tcp服务端建立连接10s之后关闭客户端连接
-    setTimeout(function(){
-        client.end('再见')
-    },10000)
+    // setTimeout(function(){
+    //     client.end('再见')
+    // },10000)
+    console.log('当前已发送%d字节',client.bytesWritten)
+    client.end('再见')
+    console.log('当前已发送%d字节',client.bytesWritten)
 })
 client.on('data',function(data){
     console.log('已接受到服务器端发送的数据'+data);
