@@ -18,18 +18,47 @@
 // console.log('Server is running at http://127.0.0.1:1337/')
 
 //创建http服务器
-var http = require('http');
-var server = http.createServer(function(req,res){
-    res.end()
-    //暂不指定接收到客户端请求时的处理
-}).listen(1337,'127.0.0.1');
-server.on('connection',function(socket){
-    console.log('客户端连接已经建立')
-})
-//使用setTimeout设置服务器超时时间
-server.setTimeout(60*1000,function(socket){
-    console.log('服务器超时')
-    // console.log(socket)
-    console.log(server.timeout)
-})
+// var http = require('http');
+// var server = http.createServer(function(req,res){
+//     res.end()
+//     //暂不指定接收到客户端请求时的处理
+// }).listen(1337,'127.0.0.1');
+// server.on('connection',function(socket){
+//     console.log('客户端连接已经建立')
+// })
+// // 使用setTimeout设置服务器超时时间
+// server.setTimeout(60*1000,function(){
+//     console.log('服务器超时')
+//     // console.log(socket)
+//     console.log(server.timeout)
+// })
 
+//在文件中保存客户端请求信息
+// var http = require('http');
+// var fs = require('fs');
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         var out = fs.createWriteStream('./request.log')
+//         out.write('客户端所用方法为:'+req.method+'\r\n');
+//         out.write('客户端请求所用url字符串为:'+req.url+'\r\n');
+//         out.write('客户端请求头对象为:'+JSON.stringify(req.headers)+'\r\n')
+//         out.end('客户端请求所用http版本为'+req.httpVersion)
+//     }
+//     res.end()
+// }).listen(1337,'127.0.0.1')
+
+// var http = require('http');
+// var fs = require('fs');
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         req.on('data',function(data){
+//              console.log('服务器接收到数据:'+decodeURIComponent(data));
+//         });
+//        req.on('end',function(){
+//            console.log('客户端请求已全部接收完毕')
+//        })
+//     }
+//     res.end();
+// }).listen(1337,'127.0.0.1')
+
+//转换url字符串与查询字符串
