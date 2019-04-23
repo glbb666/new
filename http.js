@@ -309,12 +309,20 @@
 // })
 
 //向本地服务器请求数据
+
+//用于接收数据的http服务器
 var  http = require('http');
 var server = http.createServer(function(req,res){
     if(req.url!=='/favicon.ico'){
+        console.log(1);
         req.on('data',function(data){
             console.log('服务器端接收到数据:'+data);
+            res.write('确认数据'+data)
+        })
+        req.on('end',function(){
+            res.addTrailers({'Content-MD5':'aaaaaa'});
             res.end();
         })
     }
 }).listen(1337,'127.0.0.1');
+

@@ -5,6 +5,18 @@ var options = {
     path:'/',
     method:'POST'
 };
-var req = http.request(options);
-req.write('你好');
+var req = http.request(options,function(res){
+    res.on('data',function(chunk){
+        console.log('客户端收到数据:'+chunk)
+    })
+    res.on('end',function(){
+        console.log('Trailer头信息:%j',res.trailers)
+    })
+});
+req.write('你好')
 req.end('再见')
+// req.write('你好')i
+// setTimeout(()=>{
+//     req.write('你好');
+// },2000)
+
