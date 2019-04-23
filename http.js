@@ -62,3 +62,83 @@
 // }).listen(1337,'127.0.0.1')
 
 //转换url字符串与查询字符串
+//利用parse方法解析url地址字符串
+// var http = require('http'),
+//     url = require('url');
+// var server = http.createServer().listen(1337,'localhost');
+// server.on('request',function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         res.write('<html><head><meta charset="utf-8"/></head>');
+//         var url_parts = url.parse(req.url);
+//         switch(url_parts.pathname){
+//             case '/':
+//             case '/index.html':
+//                 res.write('<body>您当前正在访问网站首页</body></html>')
+//                 break; 
+//             default:
+//                 res.write('<body>您当前正在访问:'+url_parts.pathname+".</body></html>");    
+//         }
+//     }
+//     res.end();
+// })
+
+//发送服务器端响应流
+
+// var http = require('http');
+
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         //因为用文件打开，所以源是null
+//         //用读文件的方式打开，源才是正确的
+//         // console.log(req.headers)
+        
+//         res.writeHead(200,{'Content-Type':'text/plain',
+//         'Access-Control-Allow-Origin':'null'
+//         // 'Access-Control-Allow-Origin':'*'
+//     });
+//         res.write('你好');
+//     }
+//     res.end();
+// }).listen(1337,'localhost');
+
+//用setHeader设置多个响应字段
+
+// var http = require('http');
+
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         //因为用文件打开，所以源是null
+//         //用读文件的方式打开，源才是正确的
+//         // console.log(req.headers)
+        
+//     //     res.writeHead(200,{'Content-Type':'text/plain',
+//     //     // 'Access-Control-Allow-Origin':'null'
+//     //     // 'Access-Control-Allow-Origin':'*'
+//     // });
+//         res.setHeader('Content-Type','text/plain');
+//         // res.setHeader('Access-Control-Allow-Origin',"http://localhost");
+//         res.setHeader('Access-Control-Allow-Origin',null);
+//         // res.removeHeader('Access-Control-Allow-Origin')
+//         res.write('你好');
+//         console.log(res.getHeader('Content-Type'))
+//     }
+//     res.end();
+// }).listen(1337,'localhost');
+
+//使用headersSent属性查看使用writeHead方法时响应头的发送实际
+var http = require('http');
+var server = http.createServer(function(req,res){
+    if(req.url!=='/favicon.ico'){
+        if(res.headersSent) console.log('响应头已发送');
+        else console.log('响应头未发送')
+
+        res.writeHead(200,{'Content-Type':'text/html'})
+        
+        if(res.headersSent) console.log('响应头已发送')
+        else console.log('响应头未发送')
+        
+        res.write('<html><head><meta charset="uft-8"/></head>')
+        res.write('你好')
+    }
+    res.end();
+}).listen(1337,'localhost')
