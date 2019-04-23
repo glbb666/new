@@ -238,3 +238,83 @@
 
 
 //http客户端
+
+// var http = require('http');
+// var options = {
+//     hostname:'www.microsoft.com',
+//     port:80,
+//     path:'/',
+//     method:'GET'
+// }
+// var req =http.request(options,function(res){
+//     console.log('状态码:'+res.statusCode);
+//     console.log('响应头:'+JSON.stringify(res.headers));
+//     res.setEncoding('utf8');
+//     res.on('data',function(chunk){
+//         console.log('响应内容:'+chunk);
+//     })
+// })
+
+// 使用setTimeout方法设置端口超时时间
+// var http = require('http');
+// var options = {
+//     hostname:'www.amicrosoft.com',
+//     port:80,
+//     path:'/',
+//     method:'GET'
+// }
+// var req = http.request(options,function(res){
+//     console.log('状态码:'+res.statusCode);
+//     console.log('响应头:'+JSON.stringify(res.headers));
+//     res.setEncoding('utf8');
+//     res.on('data',function(chunk){
+//         console.log('响应内容:'+chunk)
+//     })
+// })
+// req.setTimeout(1000, function(){
+//     req.abort()
+// })
+// req.on('error',function(err){
+//     if(err.code==='ECONNRESET'){
+//         console.log('socket端口超时')
+//     }
+//     else{
+//         console.log('在请求数据的时候发生错误，错误代码为:'+err.code)
+//     }
+// })
+// req.end();
+
+//使用get方法向其他网站请求数据
+// var http = require('http');
+// var options = {
+//     hostname:'www.microsoft.com',
+//     port:80,
+//     path:'/'
+// }
+// var req = http.get(options,function(res){
+//     console.log('状态码:'+res.statusCode);
+//     // console.log('响应头:'+res.headers);
+//     // 响应头:[object Object]
+//     console.log('响应头:'+JSON.stringify(res.headers))
+//     res.setEncoding('utf8');
+//     res.on('data',function(chunk){
+//         console.log('响应内容:'+chunk);
+//     })
+// })
+// req.setTimeout(1000,function(){
+//     req.abort()
+// })
+// req.on('error',function(err){
+//     console.log('在请求数据的过程中发生错误，错误代码为:'+err.code)
+// })
+
+//向本地服务器请求数据
+var  http = require('http');
+var server = http.createServer(function(req,res){
+    if(req.url!=='/favicon.ico'){
+        req.on('data',function(data){
+            console.log('服务器端接收到数据:'+data);
+            res.end();
+        })
+    }
+}).listen(1337,'127.0.0.1');
