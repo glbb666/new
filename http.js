@@ -166,4 +166,75 @@
 //     res.end();
 // }).listen(1337,'localhost')
 
-//
+//sendDate属性与statusCode属性的用例
+//用write写入的head值，会成为html中head的部分，head之后的值，会成为body的innerHTML
+//html就算缺了，现有版本的chrome也会自动补上
+//write会发送隐式响应头,和write中的内容无关
+
+// var http = require('http');
+// var server = http.createServer(function(req,res){
+//     if(req.url!='/favicon.ico'){
+//         res.statusCode = 404;
+//         // res.sendDate = false;
+//         res.write('<head><meta charset="UTF-8"></meta></head>')
+//     }
+//     res.end();
+// }).listen(1337,'localhost')
+
+//addTrailers方法在响应头的尾部追加一个头信息
+// var http = require('http');
+// var server = http.createServer(function(req,res){
+//     if(req.url!='/favicon.ico'){
+//         // res.statusCode = 404;
+//         // res.sendDate = false;
+//         res.writeHead(200,{'Content-Type':'text/plain','Trailer':'Content-MD5'})
+//         res.write('一些数据');
+//         res.addTrailers({'Content-MD5':'BBBBBBBB'})
+//     }
+//     res.end();
+// }).listen(1337,'localhost')
+
+//观察http.ServerResponse对象的返回值
+//write的返回值取决于
+//true:读出的数据是直接存在内核缓存区中
+//false:先存于内存中，再通过操作系统的内核缓存区发送给对方
+// var http = require('http');
+// var fs = require('fs');
+// var server = http.createServer(function(req,res){
+//     if(req.url!='/favicon.ico'){
+//         fs.readFile('1.jpg',function(err,data){
+//             if(err) console.log('读取文件错误')
+//             else {
+//                 res.write('<head><meta charset="UTF-8"></meta></head>')
+//                 var flag = res.write(data);
+//                 console.log(flag);
+//                 res.end();
+//             }
+//         })
+//     }
+// }).listen(1337,'localhost')
+
+// setTimeout方法的使用示例
+// var http = require('http');
+// var server = http.createServer(function(req,res){
+//     if(req.url!='/favicon.ico'){
+//         res.setTimeout(1000);
+//         //没有回调函数，socket端口将自动关闭
+//         // res.on('timeout',function(){
+//         //     console.log('服务器已超时')
+//         // })
+//         setTimeout(()=>{
+//             res.setHeader('Content-Type','text/html');
+//             res.write('<html><head><meta charset="UTF-8"/></head>')
+//             res.write('你好');
+//             res.end();
+//         }, 2000);
+//         //在http.ServerResponse对象的end方法被调用之前，如果连接中断，将触发http.ServerResponse对象的close方法
+//         res.on('close',()=>{
+//             console.log('连接已被关闭')
+//         })
+//     }
+// }).listen(1337,'localhost')
+
+
+//http客户端
