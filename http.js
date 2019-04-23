@@ -125,20 +125,45 @@
 //     res.end();
 // }).listen(1337,'localhost');
 
-//使用headersSent属性查看使用writeHead方法时响应头的发送实际
-var http = require('http');
-var server = http.createServer(function(req,res){
-    if(req.url!=='/favicon.ico'){
-        if(res.headersSent) console.log('响应头已发送');
-        else console.log('响应头未发送')
+//使用headersSent属性查看使用writeHead方法时响应头的发送时机
+// var http = require('http');
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         if(res.headersSent) console.log('响应头已发送');
+//         else console.log('响应头未发送')
 
-        res.writeHead(200,{'Content-Type':'text/html'})
+//         res.writeHead(200,{'Content-Type':'text/html'})
         
-        if(res.headersSent) console.log('响应头已发送')
-        else console.log('响应头未发送')
+//         if(res.headersSent) console.log('响应头已发送')
+//         else console.log('响应头未发送')
         
-        res.write('<html><head><meta charset="uft-8"/></head>')
-        res.write('你好')
-    }
-    res.end();
-}).listen(1337,'localhost')
+//         // res.write('<html><head><meta charset="UTF-8"/></head><h1>okk</h1>')
+//         res.write('<head><meta charset="UTF-8"/></head><h1>okk</h1>')
+//         res.write('你好')
+//     }
+//     res.end();
+// }).listen(1337,'localhost')
+
+//使用headersSent属性查看使setHeader方法时响应头的发送时机
+
+// var http = require('http');
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         res.setHeader('Content-Type','text/html');
+        
+//         if(res.headersSent) console.log('响应头已发送');
+//         else console.log('响应头未发送')
+
+//         res.write('你好')
+
+        
+//         if(res.headersSent) console.log('响应头已发送')
+//         else console.log('响应头未发送')
+        
+//         // res.write('<html><head><meta charset="UTF-8"/></head><h1>okk</h1>')
+
+//     }
+//     res.end();
+// }).listen(1337,'localhost')
+
+//
