@@ -311,18 +311,37 @@
 //向本地服务器请求数据
 
 //用于接收数据的http服务器
-var  http = require('http');
-var server = http.createServer(function(req,res){
-    if(req.url!=='/favicon.ico'){
-        console.log(1);
-        req.on('data',function(data){
-            console.log('服务器端接收到数据:'+data);
-            res.write('确认数据'+data)
-        })
-        req.on('end',function(){
-            res.addTrailers({'Content-MD5':'aaaaaa'});
-            res.end();
-        })
-    }
-}).listen(1337,'127.0.0.1');
+// var  http = require('http');
+// var server = http.createServer(function(req,res){
+//     if(req.url!=='/favicon.ico'){
+//         console.log(1);
+//         req.on('data',function(data){
+//             console.log('服务器端接收到数据:'+data);
+//             res.write('确认数据'+data)
+//         })
+//         req.on('end',function(){
+//             res.addTrailers({'Content-MD5':'aaaaaa'});
+//             res.end();
+//         })
+//     }
+// }).listen(1337,'127.0.0.1');
 
+//制作代理服务器
+var http= require('http');
+var url = require('url');
+var server = http.createServer(function(sreq,sres){
+    var url_parts = url.parse(sreq.url);
+    var opts = {
+        // host:'www.amazon.cn',
+        host:'www.baidu.com',
+        prot:80,
+        path:url_parts.pathname,
+        headers:sreq.headers
+    }
+    var creq = http.get(opts,function(cres){
+        sres.writeHead(cres.statusCode,cres.headers);
+        cres.pipe(sres);
+    });
+    sreq.pipe(creq);
+})
+server.listen(1337,'127.0.0.1')
