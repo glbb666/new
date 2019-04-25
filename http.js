@@ -327,21 +327,23 @@
 // }).listen(1337,'127.0.0.1');
 
 //制作代理服务器
-var http= require('http');
-var url = require('url');
-var server = http.createServer(function(sreq,sres){
-    var url_parts = url.parse(sreq.url);
-    var opts = {
-        // host:'www.amazon.cn',
-        host:'www.baidu.com',
-        prot:80,
-        path:url_parts.pathname,
-        headers:sreq.headers
-    }
-    var creq = http.get(opts,function(cres){
-        sres.writeHead(cres.statusCode,cres.headers);
-        cres.pipe(sres);
-    });
-    sreq.pipe(creq);
-})
-server.listen(1337,'127.0.0.1')
+// var http= require('http');
+// var url = require('url');
+// var server = http.createServer(function(sreq,sres){
+//     var url_parts = url.parse(sreq.url);
+//     var opts = {
+//         // host:'www.amazon.cn',
+//         host:'www.baidu.com',
+//         prot:80,
+//         path:url_parts.pathname,
+//         headers:sreq.headers
+//     }
+//     var creq = http.get(opts,function(cres){
+//         sres.writeHead(cres.statusCode,cres.headers);
+//         cres.pipe(sres);
+//     });
+//     sreq.pipe(creq);
+// })
+// server.listen(1337,'127.0.0.1')
+
+//创建https服务器与客户端
