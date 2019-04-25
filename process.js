@@ -62,7 +62,10 @@
 //使用spawn开启子进程
 var cp =require('child_process');
 var sp1 = cp.spawn('node',['test1.js','one','two','three','four'],{cwd:'./test'});
+// 默认情况下:options.stdio 设置为 ['pipe', 'pipe', 'pipe']
+//stdio的第一个pipe使得父进程可以访问子进程的标准输入
 var sp2 = cp.spawn('node',['test2.js'],{stdio:'pipe'})
+// var sp2 = cp.spawn('node',['test2.js'],{stdio:'ignore'})
 sp1.stdout.on('data',function(data){
     console.log('子进程标准输出:'+data);
     sp2.stdin.write(data);
