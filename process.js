@@ -69,14 +69,14 @@ var sp2 = cp.spawn('node',['test2.js'],{stdio:'pipe'})
 // var sp2 = cp.spawn('node',['test2.js'],{stdio:'ignore'})
 
 //监听子进程标准输出的data事件
-//通俗一点理解,父进程获取到子进程发送的数据
 sp1.stdout.on('data',function(data){
     console.log('子进程标准输出:'+data);
-    // 把sp1的输出的data作为sp2的输入,因为sp2的stdio[0]的值为'pipe',因此父进程可以访问sp2的标准输入
+    // 把sp1的标准输出的data作为sp2的输入,因为sp2的stdio[0]的值为'pipe',因此父进程可以访问sp2的标准输入
     sp2.stdin.write(data);
 })
+//当子进程退出了,退出父进程
 sp1.on('exit',function (code,signal){
     console.log('子进程退出,退出代码为:'+code);
-    process.exit();   
+    process.exit();
 })
 
