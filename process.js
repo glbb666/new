@@ -109,18 +109,54 @@
 // n.send({userName:'陆凌牛'});
 
 //slient设置为true
-var cp = require('child_process');
-var sp1 = cp.fork('./test/test1.js',['one','two','three','four'],{silent:true});
-var sp2 = cp.fork('test2.js');
-sp1.stdout.on('data',function(data){
-    console.log('子进程标准输出:'+data)
-    sp2.send(data.toString());
-})
-sp1.on('exit',function(code,signal){
-    console.log('子进程退出,退出代码为:'+code)
-    process.exit()
-})
-sp1.on('error',function(err){
-    console.log('子进程开启失败:'+err)
-    process.exit()
+// var cp = require('child_process');
+// var sp1 = cp.fork('./test/test1.js',['one','two','three','four'],{silent:true});
+// var sp2 = cp.fork('test2.js');
+// sp1.stdout.on('data',function(data){
+//     console.log('子进程标准输出:'+data)
+//     // console.log(data.toString())
+//     sp2.send(data.toString());
+// })
+// sp1.on('exit',function(code,signal){
+//     console.log('子进程退出,退出代码为:'+code)
+//     process.exit()
+// })
+// sp1.on('error',function(err){
+//     console.log('子进程开启失败:'+err)
+//     process.exit()
+// })
+
+//在send方法中发送服务器对象
+// var net = require('net');
+// var http = require('http');
+// var child_process = require('child_process');
+// var fs = require('fs');
+// var child = child_process.fork('child.js');
+// var server = net.createServer();
+// server.listen(1337,'127.0.0.1',function(){
+//     child.send('server',server);
+//     console.log('父进程中的服务器已经创建');
+//     var httpServer = http.createServer();
+//     httpServer.on('request',function(req,res){
+//         if(req.url!=='/favicon.ico'){
+//             var sum = 0;
+//             for(var i = 0;i<1000000;i++){
+//                 sum+=i;
+//             }
+//             res.write('客户端请求在父进程中被处理');
+//             res.end('sum='+sum);
+//         }
+//     });
+//     httpServer.listen(server);
+// })
+
+//父进程与子进程共享socket端口对象
+var child = require('child_process').fork('child.js');
+var server = require('net').createServer();
+server.on('connection',function(socket){
+    if(socket.remoteAddress!=='192.168.1.100'){
+        child.send('socket',socket);
+        return;
+    }
+    socket.end('客户端请求被父进程处理')
 })
