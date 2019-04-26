@@ -151,12 +151,102 @@
 // })
 
 //父进程与子进程共享socket端口对象
-var child = require('child_process').fork('child.js');
-var server = require('net').createServer();
-server.on('connection',function(socket){
-    if(socket.remoteAddress!=='192.168.1.100'){
-        child.send('socket',socket);
-        return;
-    }
-    socket.end('客户端请求被父进程处理')
-})
+// var child = require('child_process').fork('child.js');
+// var server = require('net').createServer();
+// server.on('connection',function(socket){
+//     if(socket.remoteAddress!=='192.168.1.100'){
+//         child.send('socket',socket);
+//         return;
+//     }
+//     socket.end('客户端请求被父进程处理')
+// })
+// server.listen(42367,'192.168.1.249');
+
+//使用exec方法开启子进程
+// var cp = require('child_process');
+// var sp1 = cp.exec('node test1.js one two three four',{cwd:'./test'},function(err,stdout,stderr){
+//     if(err){
+//         console.log('子进程开启失败:'+err)
+//         process.exit()
+//     }
+//     else{
+//         console.log('子进程标准输出:'+stdout.toString());
+//         sp2.stdin.write(stdout.toString())
+//     }
+// });
+// var sp2 = cp.exec('node test2.js',function(err,stdout,stderr){
+//     process.exit()
+// })
+
+//使用execFile方法开启子进程
+// var cp = require('child_process');
+// var sp1 = cp.execFile('test1.bat',['one','two','three','four'],{cwd:'./test'},function(err,stdout,stderr){
+//     if(err){
+//         console.log('子进程开启失败:'+err);
+//         process.exit()
+//     }
+//     else{
+//         console.log('子进程标准输出:'+stdout.toString());
+//         sp2.stdin.write(stdout.toString())
+//     }
+// })
+// var sp2 = cp.execFile('test2.bat')
+
+//使用fork方法开启用于运行Node.js应用程序的子进程
+// var cluster = require('cluster');
+// var http = require('http');
+// if(cluster.isMaster){
+//     cluster.fork();
+//     cluster.fork();
+//     cluster.fork();
+//     console.log('这段代码被运行在主进程中')
+// }
+// else{
+//     http.createServer(function(req,res){
+//         if(req.url!=='/favicon.ico'){
+//             res.writeHead(200,{'Content-Type':'text/html'})
+//             res.write('<head><meta charset="UTF-8"/></head>')
+//             res.end('你好');
+//             console.log("这段代码被运行在子进程中")
+//         }
+//     }).listen(1337)
+// }
+// cluster.on('fork',function(worker){
+//     console.log('子进程'+worker.id+'被开启')
+// })
+// cluster.on('online',function(worker){
+//     console.log('已接收到进程'+worker.id+'的反馈信息');
+// })
+// cluster.on('listening',function(worker,address){
+//     console.log('子进程中的服务器开始监听,地址为:'+address.address+":"+address.port);
+// })
+
+//使用setupMaster方法指定子进程中运行的文件
+// var cluster = require('cluster');
+// cluster.setupMaster({
+//     exec:"child.js"
+// })
+// cluster.fork()
+// console.log('这段代码被运行在主进程中');
+// console.log('cluster.setting 属性值:%j',cluster.settings);
+
+//在多个子进程中运行HTTP服务器
+var cluster = require('cluster');
+var http = require('http')
+if(cluster.isMaster){
+    cluster.fork();
+    cluster.fork();
+}
+else{
+    http.createServer(function(req,res){
+        if(req.url!=="/favicon.ico"){
+            var sum = 0;
+            for(var i = 0;i<5000000;i++){
+                sum+=i;
+            }
+            res.writeHead(200);
+            res.write('客户端请求在子进程'+cluster.worker.id+"中被处理")
+            res.end('sum='+sum)
+        }
+    }).listen(1337)
+}
