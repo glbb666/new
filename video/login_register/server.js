@@ -4,26 +4,24 @@ const querystring = require('querystring');
 const urlLib = require('url');
 
 var users={};
-
 var server = http.createServer(function(req,res){
     //解析数据
+    console.log(1)
     var str = '';
     req.on('data',function(data){
         str+=data;
     })
-    res.on('end',function(){
-        var obj = urlLib.parse(req.url,true);
-        
+    req.on('end',function(){
+        var obj = urlLib.parse(req.url,true);        
         const url = obj.pathname;
         const GET = obj.query;
         const POST = querystring.parse(str);
-
         //区分——接口、文件
         if(url=='/user'){   //接口
             switch(GET.act){
                 case 'reg':
                   //1.检查用户名是否已经有了
-                    if(user[GET.user]){
+                    if(users[GET.user]){
                         res.write('{"ok":false,"msg":"此用户已存在"}')
                     }else{
                         //2.插入users
@@ -56,7 +54,7 @@ var server = http.createServer(function(req,res){
                 }
                 res.end();
             })
-        }
+            }
     })
     //读取文件
     //返回给前台
