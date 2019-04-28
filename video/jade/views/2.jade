@@ -1,0 +1,15 @@
+html
+    head
+    script(src="jade.js")
+    link(href="a.css",ref="rel/stylesheet")
+    body
+        div(style="width:200px;height:200px;background:red")
+        div(style={width:'200px',height:'200px',background:'red'})
+            a(href="http://www.baidu.com") 官网
+        div(class="left top right")
+        div(class=['left','top','right'])
+
+        div(title='a',class='2')
+        div&attributes({title:'a',class:['1','4','3','2']})
+        
+        
