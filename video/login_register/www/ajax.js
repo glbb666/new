@@ -46,7 +46,7 @@ function ajax(obj){
     ajaxObj.send(null);
     }else{
     ajaxObj.open(type,obj.url,true);
-    ajaxObj.setRequestHeader("Contesnt-Type","application/x-www-form-urlencoded");
+    ajaxObj.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
     ajaxObj.send(params);
     }
     }

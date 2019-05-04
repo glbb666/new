@@ -17,7 +17,7 @@
                 ajax({
                     url:'/user',
                     data:{act:'reg',user:oTxtUser.value,pass:oTxtPass.value},
-                    type:'get',
+                    type:'post',
                     success:function(obj){
                         if(obj.ok){
                             alert('注册成功');
@@ -34,7 +34,7 @@
                 ajax({
                     url:'/user',
                    data:{act:'login',user:oTxtUser.value,   pass:oTxtPass.value},
-                   type:'get',
+                   type:'post',
                    success:function(obj){
                         if(obj.ok){
                             alert('登录成功')

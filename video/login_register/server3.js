@@ -1,16 +1,33 @@
-const http = require('http');
+//引入express框架
+const express = require('express');
+//用来转换post的信息的
+const bodyParser = require('body-parser');
 const fs = require('fs');
-const querystring = require('querystring');
 const urlLib = require('url');
+const cookie = require('cookie');
+const cookieSession  = require('cookie-session');
 
-var users={};
-var server = http.createServer(function(req,res){
-    //解析数据
-    // console.log(1)
-    var str = '';
-    const newLocal = req.on('data', function (data) {
-        str += data;
-    });
+
+var user = {};
+
+
+
+//使用express框架创建服务器
+var server = new express();
+//使用bodyParser,解析post上来的数据
+server.use(bodyParser.urlencoded({}))
+
+//use可以接收/user接口到无论是get还是post的请求
+//
+server.use('/',function(req,res){
+    // console.log(req.body);
+    // console.log(req.url)
+    console.log(req.body)
+    var GET = req.query;
+    var POST = req.body;
+    let url = urlLib.parse(req.url,true)
+    // console.log(url)
+    //当是接口的时候
     req.on('end',function(){
         var obj = urlLib.parse(req.url,true);        
         const url = obj.pathname;
@@ -55,8 +72,10 @@ var server = http.createServer(function(req,res){
                 res.end();
             })
             }
-    })
-    //读取文件
-    //返回给前台
+        })
 })
-server.listen(8080)
+// server.use('/user',function(req,res){
+
+// })
+
+server.listen(8080);

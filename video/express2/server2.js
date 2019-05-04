@@ -11,7 +11,7 @@ server.use(bodyParser.urlencoded({
 }));
 
 server.use('/',function(req,res){
-    console.log(req.body)//GET
+    console.log(req.body)//POST
 })
 
 //req.query GET
