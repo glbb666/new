@@ -8,11 +8,12 @@ var connection = mysql.createConnection({
     password:'191026',
     database:'weekly'
 })
-connection.connect();
+handleDisconnect(connection);
 //登录接口
 server.use(bodyParser.urlencoded({}))
-server.listen(8081);
+server.listen(8082);
 server.post('/weekly_war/user/register.do',function(req,res){
+    connection.connect();
     console.log("注册:");
     console.log(req.body);
     var user = req.body;
@@ -20,24 +21,64 @@ server.post('/weekly_war/user/register.do',function(req,res){
     // 1.用户名的长度符合要求
     // 2.密码的长度符合要求
     // 3.用户名在数据库中不存在
-    
     //在数据库中创建一个user表，保存注册的用户信息
     //当要新添入用户的时候，就查看user表，如果有相同的用户名，那么注册成功，否则注册失败。
     var addSql = "INSERT INTO user(weekly_id,weekly_email,weekly_password,weekly_phone) VALUES(0,?,?,?)";
     var addSqlParams = [user.email,user.password,user.phone];
-    //增
+    //增加成员
+    var data;
     connection.query(addSql,addSqlParams,function(err,result){
         if(err){
-            console.log('[INSERT ERROR] - ',err.message);
-            res.write('{"ok":false,"msg":"此用户已存在"}')
-            return;
+            data = {
+                msg:"注册失败,用户名已存在",
+                code:4000,
+                success:false
+            };
+            res.write(JSON.stringify(data));
+            res.end();
+        }else{
+            data = {
+                msg:"注册成功",
+                code:2000,
+                success:true,
+                user:{
+                    //id要从数据库中获取
+                    "id":result.insertId,
+                    "email":null,
+                    "password":null,
+                }
+            }
+            res.write(JSON.stringify(data));
+            //结束响应
+            res.end();
+            //注册成功,再终止数据库的连接
+            // connection.end();
+            // console.log('INSERT ID:',result.insertId);
         }
-        // console.log('INSERT ID:',result.insertId);
-        res.write('{"ok":true,"msg":"注册成功"}')
     });
-    // connection.end();
-})
-server.post('/weekly_war/user/login.do',function(req,res){
-    console.log("登录:");
-    console.log(req.body);
-})
+    connection.end();
+});
+// server.post('/weekly_war/user/login.do',function(req,res){
+//     console.log("登录:");
+//     console.log(req.body);
+// })
+
+
+function handleDisconnect(connection) {
+    //监听错误事件
+    connection.on('error', function(err) {
+      if (!err.fatal) {
+        return;
+      }
+   
+      if (err.code !== 'PROTOCOL_CONNECTION_LOST') {
+        throw err;
+      }
+   
+      console.log('Re-connecting lost connection: ' + err.stack);
+   
+      connection = mysql.createConnection(connection.config);
+      handleDisconnect(connection);
+      connection.connect();
+    });
+  }
