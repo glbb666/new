@@ -125,7 +125,7 @@ server.post('/weekly_war/user/login.do',function(req,res){
                             }
                         };
                         //登陆成功之后,设置cookie
-
+                        
                     }else{
                         data = {
                             msg:"账户或密码错误",
