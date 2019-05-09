@@ -4,6 +4,12 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
+const cookie = require('cookie');
+
+//用来读取cookie的
+const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
+
 let server = new express();
 server.listen(8084);
 
