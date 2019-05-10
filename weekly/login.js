@@ -11,8 +11,19 @@ const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
 
 let server = new express();
+server.use(bodyParser.urlencoded({}))
 server.listen(8084);
-
+server.use(cookieParser('secret'));
+(function(){
+        let arr = [];
+        for(let i = 0;i<10000;i++){
+            arr.push('keys_'+Math.random());
+        }       
+        server.use(cookieSession({
+            keys:arr,
+            name:'USER'
+        }))
+})();
 let pool = mysql.createPool({
     //创建的最大连接数
     connectionLimit:10,
@@ -24,7 +35,6 @@ let pool = mysql.createPool({
     password:'191026',
     database:'weekly'
 })
-server.use(bodyParser.urlencoded({}))
 server.post('/weekly_war/user/register.do',function(req,res){
     console.log("注册:");
     console.log(req.body);
@@ -130,8 +140,12 @@ server.post('/weekly_war/user/login.do',function(req,res){
                                 userName:result[0].weekly_email
                             }
                         };
+                        //??应该是给跳转之后的页面设置cookie
                         //登陆成功之后,设置cookie
-                        
+                        if(typeof req.session['user']=='undefined'){
+                            req.session['user'] = 'xixi';
+                            // res.write('这是第一次访问');
+                        }
                     }else{
                         data = {
                             msg:"账户或密码错误",
@@ -161,4 +175,16 @@ server.post('/weekly_war/user/login.do',function(req,res){
         res.write(JSON.stringify(data));
         res.end();
     }
+})
+//获取某用户三周(上,这,下)周报
+server.get('/weekly_war/task/getTasks.do',function(req,res){
+    console.log('快捷');
+    console.log(req.query);
+})
+//添加周报接口
+server.get('/weekly_war/task/addTask.do',function(req,res){
+    //在数据库中建一张表存储周报
+    console.log('添加');
+    console.log(req.query);
+    
 })
