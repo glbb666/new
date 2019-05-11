@@ -9,6 +9,8 @@ const cookie = require('cookie');
 //用来读取cookie的
 const cookieParser = require('cookie-parser');
 const cookieSession = require('cookie-session');
+const myselfSql = require('./mysql.js');
+
 
 let server = new express();
 server.use(bodyParser.urlencoded({}))
@@ -64,7 +66,7 @@ server.post('/weekly_war/user/register.do',function(req,res){
     //在数据库中创建一个user表，保存注册的用户信息
     //当要新添入用户的时候，就查看user表，如果有相同的用户名，那么注册成功，否则注册失败。
     //直接使用连接池
-    let addSql = "INSERT INTO user(weekly_id,weekly_email,weekly_password,weekly_phone) VALUES(0,?,?,?)";
+    let addSql = "INSERT INTO user(user_id,user_email,user_password,user_phone) VALUES(0,?,?,?)";
     let addSqlParams = [user.email,user.password,user.phone];
     //增加成员
     pool.query(addSql,addSqlParams,function(err,result){
@@ -115,7 +117,7 @@ server.post('/weekly_war/user/login.do',function(req,res){
     let data = {};
     if(user.email){
         //注意:如果要进行字符串比较,这里的user.email必须被双引号包住
-        let searchSql = 'SELECT weekly_email,weekly_password,weekly_id FROM user WHERE weekly_email="'+user.email+'"';
+        let searchSql = 'SELECT user_email,user_password,user_id FROM user WHERE user_email="'+user.email+'"';
         pool.query(searchSql,function(err,result){
             if(err){
                 console.log(err);
@@ -130,14 +132,14 @@ server.post('/weekly_war/user/login.do',function(req,res){
                 if(result.length!=0){
                     //当不为空,说明用户存在
                     console.log(result);
-                    if(result[0].weekly_password===user.password){
+                    if(result[0].user_password===user.password){
                         data = {
                             msg:"登陆成功",
                             code:2000,
                             success:true,
                             user:{
-                                id:result[0].weekly_password,
-                                userName:result[0].weekly_email
+                                id:result[0].user_id,
+                                userName:result[0].user_email
                             }
                         };
                         //??应该是给跳转之后的页面设置cookie
@@ -186,5 +188,37 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
     //在数据库中建一张表存储周报
     console.log('添加');
     console.log(req.query);
-    
+    let week = req.query;
+    let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,week.timeDegree,week.timeConsuming,0,week.timeId]);
+    pool.query(insertSql,function(err,result){
+        if(err){
+            console.log(err);
+            console.log(err.sqlState);
+            if(err.sqlState==22007){
+                data = {
+                    msg:"日期的格式有问题",
+                    code:1004,
+                    success:false
+                }
+            }else{
+                data = {
+                    msg:"服务器错误",
+                    code:5000,
+                    success:false
+                }
+            }
+        }else{
+            data = {
+                msg:"插入成功",
+                code:2000,
+                success:true,
+            }
+        }
+        res.write(JSON.stringify(data));
+        res.end();
+    })
+})
+//获取某用户三周(上,这,下)周报
+server.get('/weekly_war/task/getTasks.do',function(req,res){
+    console.log('okk');
 })
