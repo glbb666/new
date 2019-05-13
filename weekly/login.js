@@ -221,4 +221,5 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
 //获取某用户三周(上,这,下)周报
 server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('okk');
+    console.log(req);
 })
