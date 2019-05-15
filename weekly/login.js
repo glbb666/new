@@ -193,7 +193,6 @@ server.post('/weekly_war/user/login.do',function(req,res){
 //获取某用户三周(上,这,下)周报
 server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
-    console.log(req.session['test']);
     let data = {};
     // console.log(req.url);
     // console.log(req.query);
@@ -201,9 +200,7 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
     //我们首先要看看cookie存不存在
     // console.log(req.cookies);
     // console.log(req.signedCookies);
-    if(req.signedCookies){
-        let cookie = req.signedCookies;
-        if(cookie.user==req.query.userId){
+    if(req.session){//如果session存在,说明我们已经通过session_id查到对应的session了~
             data={
                 msg:"成功",
                 code:2000,
@@ -216,13 +213,6 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
                 success:false
             }
         }
-    }else{
-        data={
-            msg:"失败",
-            code:5000,
-            success:false
-        }
-    }
     console.log(data);
     res.write(JSON.stringify(data));
     res.end();
