@@ -8,6 +8,7 @@ const cookie = require('cookie');
 
 //用来读取cookie的
 const cookieParser = require('cookie-parser');
+//session 是基于 cookie生成的
 const cookieSession = require('cookie-session');
 const myselfSql = require('./mysql.js');
 
@@ -16,14 +17,16 @@ let server = new express();
 server.use(bodyParser.urlencoded({}))
 server.listen(8084);
 server.use(cookieParser('secret'));
+//因为session不是独立存在的，是基于cookie的，所以仍然需要解析cookie的工具
+//session是必须加入签名的，如果没加签名的话，系统会报错，告诉你Error:.required for signed cookies
 (function(){
         let arr = [];
         for(let i = 0;i<10000;i++){
             arr.push('keys_'+Math.random());
-        }       
+        }
         server.use(cookieSession({
-            keys:arr,
-            name:'USER'
+            keys:arr,//设置session密钥
+            name:'user'//加密的cookie的名字,存储的是一个session_id,最后通过这个来在服务端查找到对应的人
         }))
 })();
 let pool = mysql.createPool({
@@ -112,6 +115,7 @@ server.post('/weekly_war/user/register.do',function(req,res){
 server.post('/weekly_war/user/login.do',function(req,res){
     console.log("登录:");
     console.log(req.body);
+    
     //当登陆的时候,调取数据库中user表的内容,如果表中的内容存在,那么说明这个用户已经注册过了,那么我们就验证用户输入的密码和数据库中的密码是否匹配,如果匹配的话,那么就让用户登录成功,并且给客户端设置一个cookie,否则用户登陆失败.
     let user = req.body;
     let data = {};
@@ -142,11 +146,19 @@ server.post('/weekly_war/user/login.do',function(req,res){
                                 userName:result[0].user_email
                             }
                         };
-                        //??应该是给跳转之后的页面设置cookie
+                        //给跳转之后的页面设置cookie
                         //登陆成功之后,设置cookie
-                        if(typeof req.session['user']=='undefined'){
-                            req.session['user'] = 'xixi';
-                            // res.write('这是第一次访问');
+                        console.log('正在设置cookie');
+                        // req.secret = 'secret';
+                        res.cookie('user',result[0].user_id,{
+                            //因为path为绝对路径
+                            //只有匹配到相应的path,才会设置上cookie
+                            path:'/',//默认值为'/'
+                            maxAge:30*24*3600*1000,
+                            signed:true
+                        }); 
+                        if(typeof req.session['test'] == 'undefined'){    
+                            req.session['test'] = 'xixi';        
                         }
                     }else{
                         data = {
@@ -181,7 +193,39 @@ server.post('/weekly_war/user/login.do',function(req,res){
 //获取某用户三周(上,这,下)周报
 server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
-    console.log(req.query);
+    console.log(req.session['test']);
+    let data = {};
+    // console.log(req.url);
+    // console.log(req.query);
+    //cookie是响应头的一部分，后台发送给前端之后，前端第二次发送请求的时候会自动带上
+    //我们首先要看看cookie存不存在
+    // console.log(req.cookies);
+    // console.log(req.signedCookies);
+    if(req.signedCookies){
+        let cookie = req.signedCookies;
+        if(cookie.user==req.query.userId){
+            data={
+                msg:"成功",
+                code:2000,
+                success:true
+            }
+        }else{
+            data={
+                msg:"失败",
+                code:5000,
+                success:false
+            }
+        }
+    }else{
+        data={
+            msg:"失败",
+            code:5000,
+            success:false
+        }
+    }
+    console.log(data);
+    res.write(JSON.stringify(data));
+    res.end();
 })
 //添加周报接口
 server.get('/weekly_war/task/addTask.do',function(req,res){
@@ -217,9 +261,4 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
         res.write(JSON.stringify(data));
         res.end();
     })
-})
-//获取某用户三周(上,这,下)周报
-server.get('/weekly_war/task/getTasks.do',function(req,res){
-    console.log('okk');
-    console.log(req);
 })
