@@ -9,7 +9,7 @@ module.exports = {
     insert(table,keys,values,ignore){
         ignore===true?ignore = " IGNORE ":ignore=" ";
        
-        return "INSERT"+ignore+"INTO "+table+"('"+ keys.join("','")+"') VALUES ('"+values.join("','")+"')";
+        return "INSERT"+ignore+"INTO "+table+"("+ keys.join(",")+") VALUES ('"+values.join("','")+"')";
       
     },
     //删
@@ -24,12 +24,12 @@ module.exports = {
     //改
     update(table,keys,values,where){
         for(let i = 0;i<values.length;i++){
-            keys[i] = keys[i]+'='+values[i];
+            keys[i] = keys[i]+"='"+values[i]+"'";
         }
         if(where){
             return 'UPDATE '+table+" SET "+keys.join(",")+' WHERE '+where;
         }else{
-            return 'UPDATE '+table+" SET "+keys.join(",")
+            return 'UPDATE '+table+" SET "+keys.join(",");
         }
     },
     //查
