@@ -7,9 +7,9 @@ module.exports = {
     //默认格式:表+键+值+where/ignore
     //增
     insert(table,keys,values,ignore){
-        ignore===true?ignore = ' IGNORE ':ignore=' ';
+        ignore===true?ignore = " IGNORE ":ignore=" ";
        
-        return 'INSERT'+ignore+'INTO '+table+"('"+ keys.join("','")+"') VALUES ('"+values.join("','")+"')";
+        return "INSERT"+ignore+"INTO "+table+"('"+ keys.join("','")+"') VALUES ('"+values.join("','")+"')";
       
     },
     //删
