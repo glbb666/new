@@ -195,24 +195,27 @@ server.post('/weekly_war/user/login.do',function(req,res){
 server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
     let data = {};
-    // console.log(req.url);
-    // console.log(req.query);
-    //cookie是响应头的一部分，后台发送给前端之后，前端第二次发送请求的时候会自动带上
-    //我们首先要看看cookie存不存在
-    // console.log(req.cookies);
-    // console.log(req.signedCookies);
-    console.log(req.session);
-    console.log(req.session._ctx);
     console.log(Object.entries(req.session))
     if(Object.keys(req.session).length>1){
         //1.如果session存在,说明我们已经通过session_id查到对应的session了
         //2.因为session是一个对象,当session没有值时，是一个空对象，布尔值为false的只有null,undefined,0,"",NaN，所以说空对象的布尔值为true
         //3.为了校验它是不是一个空对象,我们可以用es6的Object.keys()方法,这个方法的返回值是一个由参数对象自身的(不含继承的)可枚举键名组成的数组,我们可以通过判断数组的长度来知道req.session是不是一个空对象。
         //4.它原本还存在一个值_ctx,所以我们判断的条件应该在原本的条件下加一
+            let selectSQL = myselfSql.select('content',"*","datediff(week,[dateadd],getdate())=0");
+            pool.query(selectSQL,function(err,result){
+                if(err){
+                    console.log(err);
+                }else{
+                    console.log(result);
+                }
+            })
             data={
                 msg:"成功",
                 code:2000,
-                success:true
+                success:true,
+                lastTask:[],
+                thisTask:[],
+                nextTask:[]
             }
         }else{
             data={
@@ -231,7 +234,7 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
     console.log('添加');
     console.log(req.query);
     let week = req.query;
-    
+
     let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,week.timeDegree,week.timeConsuming,0,week.timeId]);
     pool.query(insertSql,function(err,result){
         if(err){

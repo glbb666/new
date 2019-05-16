@@ -35,7 +35,7 @@ module.exports = {
     //查
     select(table,keys,where){
         //判断是选所有的还是选一部分的
-        keys.length === 0?keys = "*":keys = keys.join(",");
+        keys=== "*"?null:keys = keys.join(",");
         if(where){
             return 'SELECT '+keys+' FROM '+table+' WHERE '+where; 
         }else{
