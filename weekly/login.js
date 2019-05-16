@@ -69,11 +69,11 @@ server.post('/weekly_war/user/register.do',function(req,res){
     //在数据库中创建一个user表，保存注册的用户信息
     //当要新添入用户的时候，就查看user表，如果有相同的用户名，那么注册成功，否则注册失败。
     //直接使用连接池
-    let addSql = "INSERT INTO user(user_id,user_email,user_password,user_phone) VALUES(0,?,?,?)";
-    let addSqlParams = [user.email,user.password,user.phone];
+    let addSql = myselfSql.insert('user',['user_id','user_email','user_password','user_phone'],[0,user.email,user.password,user.phone])
     //增加成员
-    pool.query(addSql,addSqlParams,function(err,result){
+    pool.query(addSql,function(err,result){
         if(err){
+            console.log(err);
             if(err.code==='ER_DUP_ENTRY'){
                 data = {
                     msg:"注册失败,用户名已存在",
@@ -121,7 +121,8 @@ server.post('/weekly_war/user/login.do',function(req,res){
     let data = {};
     if(user.email){
         //注意:如果要进行字符串比较,这里的user.email必须被双引号包住
-        let searchSql = 'SELECT user_email,user_password,user_id FROM user WHERE user_email="'+user.email+'"';
+        let searchSql = myselfSql.select('user',['user_email','user_password','user_id'], 'user_email="'+user.email+'"');
+        // console.log(searchSql);
         pool.query(searchSql,function(err,result){
             if(err){
                 console.log(err);
@@ -208,6 +209,7 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
         //2.因为session是一个对象,当session没有值时，是一个空对象，布尔值为false的只有null,undefined,0,"",NaN，所以说空对象的布尔值为true
         //3.为了校验它是不是一个空对象,我们可以用es6的Object.keys()方法,这个方法的返回值是一个由参数对象自身的(不含继承的)可枚举键名组成的数组,我们可以通过判断数组的长度来知道req.session是不是一个空对象。
         //4.它原本还存在一个值_ctx,所以我们判断的条件应该在原本的条件下加一
+            
             data={
                 msg:"成功",
                 code:2000,
