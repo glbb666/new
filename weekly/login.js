@@ -132,7 +132,6 @@ server.post('/weekly_war/user/login.do',function(req,res){
                     success:false
                 };
             }else{
-                console.log('ok');
                 //这里只能判断长度,不能用result!=[],因为数组也是对象,对象默认是不相等的
                 if(result.length!=0){
                     //当不为空,说明用户存在
@@ -158,8 +157,8 @@ server.post('/weekly_war/user/login.do',function(req,res){
                             maxAge:30*24*3600*1000,
                             signed:true
                         }); 
-                        if(typeof req.session['test'] == 'undefined'){    
-                            req.session['test'] = 'xixi';        
+                        if(typeof req.session['login'] == 'undefined'){
+                            req.session['login'] = true;        
                         }
                     }else{
                         data = {
@@ -195,32 +194,54 @@ server.post('/weekly_war/user/login.do',function(req,res){
 server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
     let data = {};
-    console.log(Object.entries(req.session))
-    if(Object.keys(req.session).length>1){
+    // console.log(Object.entries(req.session))
+    if(req.session['login']){
+       // Object.keys(req.session).length>1
         //1.如果session存在,说明我们已经通过session_id查到对应的session了
         //2.因为session是一个对象,当session没有值时，是一个空对象，布尔值为false的只有null,undefined,0,"",NaN，所以说空对象的布尔值为true
         //3.为了校验它是不是一个空对象,我们可以用es6的Object.keys()方法,这个方法的返回值是一个由参数对象自身的(不含继承的)可枚举键名组成的数组,我们可以通过判断数组的长度来知道req.session是不是一个空对象。
         //4.它原本还存在一个值_ctx,所以我们判断的条件应该在原本的条件下加一
-            let selectSQL = myselfSql.select('content',"*","datediff(week,[dateadd],getdate())=0");
-            pool.query(selectSQL,function(err,result){
+            let lastTask ;
+            let thisTask ;
+            let nextTask ;
+            let lastSQL = myselfSql.select
+            ('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())-1;");
+            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now());");
+            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())+1;");
+            pool.query(lastSQL,function(err,result){
                 if(err){
                     console.log(err);
                 }else{
-                    console.log(result);
+                    console.log('okk');
+                    lastTask = result;
                 }
             })
-            data={
-                msg:"成功",
-                code:2000,
-                success:true,
-                lastTask:[],
-                thisTask:[],
-                nextTask:[]
-            }
+            pool.query(thisSQL,function(err,result){
+                if(err){
+                    console.log(err);
+                }else{
+                    thisTask = result;
+                }
+            })
+            pool.query(nextSQL,function(err,result){
+                if(err){
+                    console.log(err);
+                }else{
+                    nextTask = result;
+                    data={
+                        msg:"成功",
+                        code:2000,
+                        success:true,
+                        lastTask:lastTask,
+                        thisTask:thisTask,
+                        nextTask:nextTask
+                    }
+                }
+            })
         }else{
             data={
-                msg:"失败",
-                code:5000,
+                msg:"未登录",
+                code:1000,
                 success:false
             }
         }
