@@ -209,7 +209,6 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
         //2.因为session是一个对象,当session没有值时，是一个空对象，布尔值为false的只有null,undefined,0,"",NaN，所以说空对象的布尔值为true
         //3.为了校验它是不是一个空对象,我们可以用es6的Object.keys()方法,这个方法的返回值是一个由参数对象自身的(不含继承的)可枚举键名组成的数组,我们可以通过判断数组的长度来知道req.session是不是一个空对象。
         //4.它原本还存在一个值_ctx,所以我们判断的条件应该在原本的条件下加一
-            
             data={
                 msg:"成功",
                 code:2000,

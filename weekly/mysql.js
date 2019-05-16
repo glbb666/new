@@ -9,7 +9,7 @@ module.exports = {
     insert(table,keys,values,ignore){
         ignore===true?ignore = ' IGNORE ':ignore=' ';
        
-        return 'INSERT'+ignore+'INTO '+table+'('+ keys.join(',')+') VALUES ('+values.join(",")+')';
+        return 'INSERT'+ignore+'INTO '+table+"('"+ keys.join("','")+"') VALUES ('"+values.join("','")+"')";
       
     },
     //删
