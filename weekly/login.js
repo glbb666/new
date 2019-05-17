@@ -208,35 +208,23 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
             ('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())-1;");
             let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now());");
             let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())+1;");
-            pool.query(lastSQL,function(err,result){
-                if(err){
-                    console.log(err);
-                }else{
-                    console.log('okk');
-                    lastTask = result;
+            pool.query(lastSQL).then(function(result){                
+                lastTask = result
+                return pool.query(thisSQL)
+            }).then(function(result){
+                thisTask = result;
+                return pool.query(nextSQL)
+            }).then(function(result){
+                nextTask = result;
+                data={
+                    msg:"成功",
+                    code:2000,
+                    success:true,
+                    lastTask:lastTask,
+                    thisTask:thisTask,
+                    nextTask:nextTask
                 }
-            })
-            pool.query(thisSQL,function(err,result){
-                if(err){
-                    console.log(err);
-                }else{
-                    thisTask = result;
-                }
-            })
-            pool.query(nextSQL,function(err,result){
-                if(err){
-                    console.log(err);
-                }else{
-                    nextTask = result;
-                    data={
-                        msg:"成功",
-                        code:2000,
-                        success:true,
-                        lastTask:lastTask,
-                        thisTask:thisTask,
-                        nextTask:nextTask
-                    }
-                }
+                console.log(data);
             })
         }else{
             data={
@@ -244,9 +232,8 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
                 code:1000,
                 success:false
             }
+            res.write(JSON.stringify(data));
         }
-    console.log(data);
-    res.write(JSON.stringify(data));
     res.end();
 })
 //添加周报接口
