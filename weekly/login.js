@@ -208,24 +208,24 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
             ('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())-1;");
             let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now());");
             let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())+1;");
-            pool.query(lastSQL).then(function(result){                
-                lastTask = result
-                return pool.query(thisSQL)
-            }).then(function(result){
-                thisTask = result;
-                return pool.query(nextSQL)
-            }).then(function(result){
-                nextTask = result;
-                data={
-                    msg:"成功",
-                    code:2000,
-                    success:true,
-                    lastTask:lastTask,
-                    thisTask:thisTask,
-                    nextTask:nextTask
-                }
-                console.log(data);
-            })
+            // pool.query(lastSQL).then(function(result){               
+            //     lastTask = result
+            //     return pool.query(thisSQL)
+            // }).then(function(result){
+            //     thisTask = result;
+            //     return pool.query(nextSQL)
+            // }).then(function(result){
+            //     nextTask = result;
+            // })
+
+            data={
+                msg:"成功",
+                code:2000,
+                success:true,
+                lastTask:lastTask,
+                thisTask:thisTask,
+                nextTask:nextTask
+            }
         }else{
             data={
                 msg:"未登录",
@@ -233,6 +233,7 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
                 success:false
             }
             res.write(JSON.stringify(data));
+
         }
     res.end();
 })
