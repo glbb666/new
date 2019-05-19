@@ -249,7 +249,7 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
     console.log('添加');
     console.log(req.query);
     let week = req.query;
-    week.taskData = Date.parse(week.taskData);
+    week.taskDate = Date.parse(week.taskDate);
     let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,week.timeDegree,week.timeConsuming,0,week.timeId]);
     pool.query(insertSql,function(err,result){
         if(err){
