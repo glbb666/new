@@ -205,9 +205,14 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
             let thisTask ;
             let nextTask ;
             // from_unixtime用来把时间戳转换为日期
-            let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(now())-1;");
-            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(now());");
-            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData),'%Y-%m-%d')) = YEARWEEK(now())+1;");
+            
+            let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(DATE_ADD(NOW(),INTERVAL 1 DAY))-2;");
+
+            //把上周日到上周六改成下周一到下周日
+            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(DATE_ADD(NOW(),INTERVAL 1 DAY))-1;");
+
+            //把本周日到本周六改成下周一到下周日
+            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(DATE_ADD(NOW(),INTERVAL 1 DAY));");
 
             Promise.all(poolPromise([lastSQL,thisSQL,nextSQL])).then(result=>{
                 //这里面的内容只会执行一次
@@ -301,6 +306,5 @@ function poolPromise(sql){
             })
         })
     }
-    
     return promise;
 }
