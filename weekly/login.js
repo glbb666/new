@@ -148,7 +148,6 @@ server.post('/weekly_war/user/login.do',function(req,res){
                         };
                         //给跳转之后的页面设置cookie
                         //登陆成功之后,设置cookie
-                        console.log('正在设置cookie');
                         // req.secret = 'secret';
                         res.cookie('user',result[0].user_id,{
                             //因为path为绝对路径
@@ -158,7 +157,7 @@ server.post('/weekly_war/user/login.do',function(req,res){
                             signed:true
                         }); 
                         if(typeof req.session['login'] == 'undefined'){
-                            req.session['login'] = true;        
+                            req.session['id'] = result[0].user_id;     
                         }
                     }else{
                         data = {
@@ -195,7 +194,8 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
     let data = {};
     // console.log(Object.entries(req.session))
-    if(req.session['login']){
+    // if(req.session['login']){
+        if(1){
        // Object.keys(req.session).length>1
         //1.如果session存在,说明我们已经通过session_id查到对应的session了
         //2.因为session是一个对象,当session没有值时，是一个空对象，布尔值为false的只有null,undefined,0,"",NaN，所以说空对象的布尔值为true
@@ -204,28 +204,34 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
             let lastTask ;
             let thisTask ;
             let nextTask ;
-            let lastSQL = myselfSql.select
-            ('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())-1;");
-            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now());");
-            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(weekly_taskData,'%Y-%m-%d')) = YEARWEEK(now())+1;");
-            // pool.query(lastSQL).then(function(result){               
-            //     lastTask = result
-            //     return pool.query(thisSQL)
-            // }).then(function(result){
-            //     thisTask = result;
-            //     return pool.query(nextSQL)
-            // }).then(function(result){
-            //     nextTask = result;
-            // })
+            // from_unixtime用来把时间戳转换为日期
+            let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(now())-1;");
+            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(now());");
+            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData),'%Y-%m-%d')) = YEARWEEK(now())+1;");
 
-            data={
-                msg:"成功",
-                code:2000,
-                success:true,
-                lastTask:lastTask,
-                thisTask:thisTask,
-                nextTask:nextTask
-            }
+            Promise.all(poolPromise([lastSQL,thisSQL,nextSQL])).then(result=>{
+                //这里面的内容只会执行一次
+                console.log(result);
+                data={
+                    msg:"成功",
+                    code:2000,
+                    success:true,
+                    lastTask:result[0],
+                    thisTask:result[1],
+                    nextTask:result[2]
+                }
+                res.write(JSON.stringify(data));
+                res.end();
+            }).catch(e=>{
+                console.log(e)
+                data={
+                    msg:"服务器错误",
+                    code:5000,
+                    success:false,
+                }
+                res.write(JSON.stringify(data));
+                res.end();
+            });     
         }else{
             data={
                 msg:"未登录",
@@ -233,9 +239,9 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
                 success:false
             }
             res.write(JSON.stringify(data));
-
+            res.end();
         }
-    res.end();
+        console.log(data);
 })
 //添加周报接口
 server.get('/weekly_war/task/addTask.do',function(req,res){
@@ -243,7 +249,7 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
     console.log('添加');
     console.log(req.query);
     let week = req.query;
-
+    week.taskData = Date.parse(week.taskData);
     let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,week.timeDegree,week.timeConsuming,0,week.timeId]);
     pool.query(insertSql,function(err,result){
         if(err){
@@ -273,3 +279,28 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
         res.end();
     })
 })
+function poolPromise(sql){
+    //判断是不是数组，是数组就用Promise.all
+    let promise;
+    if(sql instanceof Array){
+        promise = sql.map(function(id){
+            let p = new Promise(function(resolve,reject){
+                pool.query(id,(err,result)=>{
+                    // console.log(id);
+                    if(err) return reject(err);
+                    resolve(result); 
+                })
+            })
+            return p;
+        })
+    }else{
+        promise = new Promise(function(resolve,reject){
+            pool.query(sql,(err,result)=>{
+                if(err) return reject(err);
+                resolve(result); 
+            })
+        })
+    }
+    
+    return promise;
+}

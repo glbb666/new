@@ -7,10 +7,10 @@ module.exports = {
     //默认格式:表+键+值+where/ignore
     //增
     insert(table,keys,values,ignore){
-        ignore===true?ignore = " IGNORE ":ignore=" ";
-       
-        return "INSERT"+ignore+"INTO "+table+"("+ keys.join(",")+") VALUES ('"+values.join("','")+"')";
-      
+        if (ignore == true) {
+			return "INSERT IGNORE INTO " + table + " (" + keys.join(",") + ") VALUES (" + value.join(",") + ")";
+		}
+		return "INSERT INTO " + table + " (" + keys.join(",") + ") VALUES (" + values.join(",") + ")";
     },
     //删
     del(table,where){
@@ -42,6 +42,4 @@ module.exports = {
             return 'SELECT '+keys+' FROM '+table;
         }
     }
-
-
 }
