@@ -40,6 +40,7 @@ let pool = mysql.createPool({
     password:'191026',
     database:'weekly'
 })
+//注册接口
 server.post('/weekly_war/user/register.do',function(req,res){
     console.log("注册:");
     console.log(req.body);
@@ -69,11 +70,26 @@ server.post('/weekly_war/user/register.do',function(req,res){
     //在数据库中创建一个user表，保存注册的用户信息
     //当要新添入用户的时候，就查看user表，如果有相同的用户名，那么注册成功，否则注册失败。
     //直接使用连接池
-    let addSql = myselfSql.insert('user',['user_id','user_email','user_password','user_phone'],[0,user.email,user.password,user.phone])
+    let addSql = myselfSql.insert('user',['user_id','user_email','user_password','user_phone'],[0,"'"+user.email+"'","'"+user.password+"'","'"+user.phone+"'"])
     //增加成员
-    pool.query(addSql,function(err,result){
-        if(err){
-            console.log(err);
+    let promise = poolPromise(addSql);
+    promise.then(result=>{
+        console.log(result);  
+        data = {
+            msg:"注册成功",
+            code:2000,
+            success:true,
+            user:{
+                //id要从数据库中获取
+                "id":result.insertId,
+                "email":null,
+                "password":null,
+            }
+        }
+        res.write(JSON.stringify(data));
+        res.end();
+    }).catch(err=>{
+        console.log(err);
             if(err.code==='ER_DUP_ENTRY'){
                 data = {
                     msg:"注册失败,用户名已存在",
@@ -88,30 +104,12 @@ server.post('/weekly_war/user/register.do',function(req,res){
                 }
             }
             res.write(JSON.stringify(data));
-        }else{
-            console.log(result);  
-            data = {
-                msg:"注册成功",
-                code:2000,
-                success:true,
-                user:{
-                    //id要从数据库中获取
-                    "id":result.insertId,
-                    "email":null,
-                    "password":null,
-                }
-            }
-            res.write(JSON.stringify(data));
-            //注册成功,再终止数据库的连接
-            // connection.end();
-            // console.log('INSERT ID:',result.insertId);
-        }
-        res.end();
-        });
-        // connection.end();
+            res.end();
+    })
     }
     //结束响应
 });
+//登录接口
 server.post('/weekly_war/user/login.do',function(req,res){
     console.log("登录:");
     console.log(req.body);
@@ -123,62 +121,62 @@ server.post('/weekly_war/user/login.do',function(req,res){
         //注意:如果要进行字符串比较,这里的user.email必须被双引号包住
         let searchSql = myselfSql.select('user',['user_email','user_password','user_id'], 'user_email="'+user.email+'"');
         // console.log(searchSql);
-        pool.query(searchSql,function(err,result){
-            if(err){
-                console.log(err);
-                data = {
-                    msg:"服务器错误",
-                    code:5000,
-                    success:false
-                };
-            }else{
-                //这里只能判断长度,不能用result!=[],因为数组也是对象,对象默认是不相等的
-                if(result.length!=0){
-                    //当不为空,说明用户存在
-                    console.log(result);
-                    if(result[0].user_password===user.password){
-                        data = {
-                            msg:"登陆成功",
-                            code:2000,
-                            success:true,
-                            user:{
-                                id:result[0].user_id,
-                                userName:result[0].user_email
-                            }
-                        };
-                        //给跳转之后的页面设置cookie
-                        //登陆成功之后,设置cookie
-                        // req.secret = 'secret';
-                        res.cookie('user',result[0].user_id,{
-                            //因为path为绝对路径
-                            //只有匹配到相应的path,才会设置上cookie
-                            path:'/',//默认值为'/'
-                            maxAge:30*24*3600*1000,
-                            signed:true
-                        }); 
-                        if(typeof req.session['login'] == 'undefined'){
-                            req.session['id'] = result[0].user_id;     
+        let promise = poolPromise(searchSql);
+        promise.then(result=>{
+             //这里只能判断长度,不能用result!=[],因为数组也是对象,对象默认是不相等的
+             if(result.length!=0){
+                //当不为空,说明用户存在
+                console.log(result);
+                if(result[0].user_password===user.password){
+                    data = {
+                        msg:"登陆成功",
+                        code:2000,
+                        success:true,
+                        user:{
+                            id:result[0].user_id,
+                            userName:result[0].user_email
                         }
-                    }else{
-                        data = {
-                            msg:"账户或密码错误",
-                            code:3000,
-                            success:false
-                        };
+                    };
+                    //给跳转之后的页面设置cookie
+                    //登陆成功之后,设置cookie
+                    // req.secret = 'secret';
+                    res.cookie('user',result[0].user_id,{
+                        //因为path为绝对路径
+                        //只有匹配到相应的path,才会设置上cookie
+                        path:'/',//默认值为'/'
+                        maxAge:30*24*3600*1000,
+                        signed:true
+                    }); 
+                    if(typeof req.session['login'] == 'undefined'){
+                        req.session['id'] = result[0].user_id;     
                     }
                 }else{
-                    //用户不存在
                     data = {
                         msg:"账户或密码错误",
                         code:3000,
                         success:false
                     };
                 }
+            }else{
+                //用户不存在
+                data = {
+                    msg:"账户或密码错误",
+                    code:3000,
+                    success:false
+                };
             }
-            //同步和异步的回调分开写,异步的res.end()记得写在回调函数的最后面,以免造成write after end的错误
             res.write(JSON.stringify(data));
             res.end();
-        });
+        }).catch(err=>{
+            console.log(err);
+                data = {
+                    msg:"服务器错误",
+                    code:5000,
+                    success:false
+                };
+                res.write(JSON.stringify(data));
+                res.end();    
+        })
     }else{
         data = {
             msg:"用户名为空",
@@ -189,7 +187,7 @@ server.post('/weekly_war/user/login.do',function(req,res){
         res.end();
     }
 })
-//获取某用户三周(上,这,下)周报
+//获取某用户三周(上,这,下)周报接口
 server.get('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
     let data = {};
@@ -259,34 +257,37 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
     let week = req.query;
     week.taskDate = Date.parse(week.taskDate);
     let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,week.timeDegree,week.timeConsuming,0,week.timeId]);
-    pool.query(insertSql,function(err,result){
-        if(err){
-            console.log(err);
-            console.log(err.sqlState);
-            if(err.sqlState==22007){
-                data = {
-                    msg:"日期的格式有问题",
-                    code:1004,
-                    success:false
-                }
-            }else{
-                data = {
-                    msg:"服务器错误",
-                    code:5000,
-                    success:false
-                }
+    console.log(insertSql);
+    let promise = poolPromise(insertSql);
+    promise.then(result=>{
+        data = {
+            msg:"插入成功",
+            code:2000,
+            success:true,
+        }
+        res.write(JSON.stringify(data));
+        res.end();
+    }).catch(err=>{
+        console.log(err);
+        console.log(err.sqlState);
+        if(err.sqlState==22007){
+            data = {
+                msg:"日期的格式有问题",
+                code:1004,
+                success:false
             }
         }else{
             data = {
-                msg:"插入成功",
-                code:2000,
-                success:true,
+                msg:"服务器错误",
+                code:5000,
+                success:false
             }
         }
         res.write(JSON.stringify(data));
         res.end();
     })
 })
+//数据库连接池操作函数
 function poolPromise(sql){
     //判断是不是数组，是数组就用Promise.all
     let promise;

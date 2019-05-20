@@ -8,9 +8,9 @@ module.exports = {
     //增
     insert(table,keys,values,ignore){
         if (ignore == true) {
-			return "INSERT IGNORE INTO " + table + " (" + keys.join(",") + ") VALUES (" + value.join(",") + ")";
+			return "INSERT IGNORE INTO " + table + " (" + keys.join(",") + ") VALUES ('" + value.join("','") + "')";
 		}
-		return "INSERT INTO " + table + " (" + keys.join(",") + ") VALUES (" + values.join(",") + ")";
+		return "INSERT INTO " + table + " (" + keys.join(",") + ") VALUES (" + values.join(',') + ")";
     },
     //删
     del(table,where){
