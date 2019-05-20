@@ -205,14 +205,17 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
             let thisTask ;
             let nextTask ;
             // from_unixtime用来把时间戳转换为日期
-            
-            let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(DATE_ADD(NOW(),INTERVAL 1 DAY))-2;");
+            //这里我进行了改写
+            /* 
+                这里的curdata()取得的一周是从周日开始到周六,而我想获得的一周是从周一开始到周日,也就是curdata()加一天。我首先想到的是,我可以用明天作为一周的基准 ,但是我发现YEARWEEK(DATE_SUB(curdate(),INTERVAL -1 DAY))没有起作用,于是我修改了一下时间戳,因为时间戳的单位为毫秒,所以我让时间戳减去一天等于本周(星期日到星期六)。这样的话,相当于时间戳不减去一天等于本周(星期一到星期天)
+            */
+            let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())-1;");
 
-            //把上周日到上周六改成下周一到下周日
-            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(DATE_ADD(NOW(),INTERVAL 1 DAY))-1;");
+           //本周：从周日开始到周六
+            let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate());");
 
-            //把本周日到本周六改成下周一到下周日
-            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime(weekly_taskData/1000),'%Y-%m-%d')) = YEARWEEK(DATE_ADD(NOW(),INTERVAL 1 DAY));");
+        
+            let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())+1;");
 
             Promise.all(poolPromise([lastSQL,thisSQL,nextSQL])).then(result=>{
                 //这里面的内容只会执行一次
