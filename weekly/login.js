@@ -5,12 +5,12 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const cookie = require('cookie');
-
 //用来读取cookie的
 const cookieParser = require('cookie-parser');
 //session 是基于 cookie生成的
 const cookieSession = require('cookie-session');
 const myselfSql = require('./mysql.js');
+const sessionOk = require('./sessionOk.js');
 
 
 let server = new express();
@@ -188,12 +188,16 @@ server.post('/weekly_war/user/login.do',function(req,res){
     }
 })
 //获取某用户三周(上,这,下)周报接口
-server.get('/weekly_war/task/getTasks.do',function(req,res){
+//因为每次用if判断session都是一件比较麻烦的事情,所以我就自己写了一个判断session的中间件,当session合法的时候，才会执行下一个use的内容。
+//express文档中,use的第一个值如果为空，默认值为响应所有发来的请求，我们还可以在第一个参数中使用正则表达式,对发来的请求进行筛选。
+//sessionOk检测发来的请求有没有session值,如果有的话，才开放对'/weekly_war/task/getTasks.do'接口的请求。
+//res.end()标志着一次链式操作的结束。
+server.use(sessionOk());
+server.use('/weekly_war/task/getTasks.do',function(req,res){
     console.log('快捷');
     let data = {};
     // console.log(Object.entries(req.session))
-    // if(req.session['login']){
-        if(1){
+    // if(req.session['id']){
        // Object.keys(req.session).length>1
         //1.如果session存在,说明我们已经通过session_id查到对应的session了
         //2.因为session是一个对象,当session没有值时，是一个空对象，布尔值为false的只有null,undefined,0,"",NaN，所以说空对象的布尔值为true
@@ -238,18 +242,10 @@ server.get('/weekly_war/task/getTasks.do',function(req,res){
                 res.write(JSON.stringify(data));
                 res.end();
             });     
-        }else{
-            data={
-                msg:"未登录",
-                code:1000,
-                success:false
-            }
-            res.write(JSON.stringify(data));
-            res.end();
-        }
         console.log(data);
 })
 //添加周报接口
+server.use(sessionOk());
 server.get('/weekly_war/task/addTask.do',function(req,res){
     //在数据库中建一张表存储周报
     console.log('添加');
@@ -285,6 +281,18 @@ server.get('/weekly_war/task/addTask.do',function(req,res){
         }
         res.write(JSON.stringify(data));
         res.end();
+    })
+})
+//获取自己所有周报接口
+server.use(sessionOk());
+server.post('/weekly_war/task/getAllTasksByUserId.do',function(req,res){
+    console.log(req.body);
+    var selectSql = myselfSql.select('content',"*");
+    let promise = poolPromise(selectSql);
+    promise.then(result=>{
+        console.log(result);
+    }).catch(err=>{
+        console.log(err);
     })
 })
 //数据库连接池操作函数
