@@ -5,6 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql');
 const cookie = require('cookie');
+const qs = require('querystring');
 //用来读取cookie的
 const cookieParser = require('cookie-parser');
 //session 是基于 cookie生成的
@@ -13,23 +14,13 @@ const sessionOk = require('./sessionOk.js');
 const cbFn = require('./cbFn.js')
 
 let server = new express();
-server.use(bodyParser.urlencoded({}))
-server.use('/',function(req,res,next){
-    var str = '';
-    if(req.headers['content-type']=='app/json'){
-        
-        req.on('data',function(data){
-            str+=data;
-        })
-        req.on('end',function(){
-            req.body = JSON.parse(str);
-           
-        })
-    } 
-    next();
-})
-   
 
+//用来解析content-tyoe = "www-form-urlencoded"
+server.use(bodyParser.urlencoded({}))
+//用来解析content-type = "application/json"
+server.use(bodyParser.json({}))
+
+   
 server.listen(8084);
 server.use(cookieParser('secret'));
 //因为session不是独立存在的，是基于cookie的，所以仍然需要解析cookie的工具
@@ -60,14 +51,13 @@ server.post('/weekly_war/user/register.do',cbFn.register(pool));
 //登录接口
 server.post('/weekly_war/user/login.do',cbFn.login(pool));
 
-server.use(sessionOk());
+//session验证
+// server.use(sessionOk());
 server.use('/weekly_war/task/getTasks.do',cbFn.quick(pool));
 //添加周报接口
-server.use('/weekly_war/task/addTask.do',cbFn.add(pool))
+server.use('/weekly_war/task/addTask.do',cbFn.addTask(pool))
 //获取自己所有周报接口
 server.use('/weekly_war/task/getAllTasksByUserId.do',cbFn.allTasks(pool))
 //删除周报接口
-server.use('weekly_war/task/deleteTask.do',function(req,res){
-    console.log(req.query);
-})
+server.use('/weekly_war/task/deleteTask.do',cbFn.deleteTask(pool))
 //数据库连接池操作函数

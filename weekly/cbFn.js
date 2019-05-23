@@ -143,11 +143,11 @@ module.exports = {
             }
         }
     },
-    //获取某用户三周(上,这,下)周报接口
-//因为每次用if判断session都是一件比较麻烦的事情,所以我就自己写了一个判断session的中间件,当session合法的时候，才会执行下一个use的内容。
-//在一个路径上挂载一个中间件之后，每当请求的路径的前缀部分匹配了这个路由路径，那么这个中间件就会被执行。 由于默认的路径为/，中间件挂载没有指定路径，那么对于每个请求，这个中间件都会被执行。我们还可以在第一个参数中使用正则表达式,对发来的请求进行筛选。
-//sessionOk检测发来的请求有没有session值,如果有的话，才开放对'/weekly_war/task/getTasks.do'接口的请求。
     quick(pool){
+         //获取某用户三周(上,这,下)周报接口
+        //因为每次用if判断session都是一件比较麻烦的事情,所以我就自己写了一个判断session的中间件,当session合法的时候，才会执行下一个use的内容。
+        //在一个路径上挂载一个中间件之后，每当请求的路径的前缀部分匹配了这个路由路径，那么这个中间件就会被执行。 由于默认的路径为/，中间件挂载没有指定路径，那么对于每个请求，这个中间件都会被执行。我们还可以在第一个参数中使用正则表达式,对发来的请求进行筛选。
+        //sessionOk检测发来的请求有没有session值,如果有的话，才开放对'/weekly_war/task/getTasks.do'接口的请求。 
         return function(req,res){
             console.log('快捷');
             let data = {};
@@ -198,16 +198,16 @@ module.exports = {
                 // console.log(data);
         }
     },
-    add(pool){
+    addTask(pool){
         return function(req,res){
             //在数据库中建一张表存储周报
             console.log('添加');
             console.log(req.query);
             let week = req.query;
             week.taskDate = Date.parse(week.taskDate);
-            let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,week.timeDegree,week.timeConsuming,0,week.timeId]);
+            let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,Number(week.timeDegree),week.timeConsuming,0,week.timeId]);
             // console.log(insertSql);
-            let promise = poolPromise(pool,insertSql);
+            let promise = poolP.poolPromise(pool,insertSql);
             promise.then(result=>{
                 data = {
                     msg:"插入成功",
@@ -238,21 +238,51 @@ module.exports = {
     allTasks(pool){
         return function(req,res){
             console.log("自己的所有:")
-            console.dir(req);
+            console.log(req.body);
             //可以获取到page和Params;
+            let page = req.body.pageParams.page;
+            let pageSize = req.body.pageParams.pageSize;
             let data;
-            var selectSql = myselfSql.select('content',"*","user_id="+req.session["id"]);
+            let selectSql = myselfSql.select('content',"*","user_id="+req.body["userId"]);
+
             let promise = poolP.poolPromise(pool,selectSql);
             promise.then(result=>{
+                let length = result.length;
+                result = result.slice((page-1)*pageSize,page*pageSize);
                 data = {
                     msg:"获取成功",
                     code:2000,
                     success:true,
-                    tasks:result
+                    tasks:result,
+                    total:length,
+                    totalPage:Math.ceil(length/pageSize)
                 }
                 res.send(JSON.stringify(data));
             }).catch(err=>{
                 console.log(err);
+            })
+        }
+    },
+    deleteTask(pool){
+        return function(req,res){
+            let deleteSql = myselfSql.del('content','weekly_id='+req.query.id);
+            let promise = poolP.poolPromise(pool,deleteSql);
+            let data = {};
+            promise.then(result=>{
+                data = {
+                    msg:"成功",
+                    code:2000,
+                    success:true
+                };
+                res.send(JSON.stringify(data))
+            }).catch(err=>{
+                console.log(err);
+                data = {
+                    msg:"失败",
+                    code:5000,
+                    success:false
+                };
+                res.send(JSON.stringify(data));
             })
         }
     }
