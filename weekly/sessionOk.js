@@ -4,12 +4,11 @@
 module.exports = function(){
     return function(req, res, next) {
         if (!req.session['id']) {
-            res.write(JSON.stringify({
+            res.send(JSON.stringify({
                 msg:"未登录",
                 code:1000,
                 success:false
             }));
-            res.end();
         } else {
             next();
         }
