@@ -240,22 +240,22 @@ module.exports = {
             console.log("自己的所有:")
             console.log(req.body);
             //可以获取到page和Params;
-            let page = req.body.pageParams.page;
-            let pageSize = req.body.pageParams.pageSize;
+            // let page = req.body.pageParams.page;
+            // let pageSize = req.body.pageParams.pageSize;
             let data;
             let selectSql = myselfSql.select('content',"*","user_id="+req.body["userId"]);
 
             let promise = poolP.poolPromise(pool,selectSql);
             promise.then(result=>{
                 let length = result.length;
-                result = result.slice((page-1)*pageSize,page*pageSize);
+                // result = result.slice((page-1)*pageSize,page*pageSize);
                 data = {
                     msg:"获取成功",
                     code:2000,
                     success:true,
                     tasks:result,
-                    total:length,
-                    totalPage:Math.ceil(length/pageSize)
+                    // total:length
+                    // totalPage:Math.ceil(length/pageSize)
                 }
                 res.send(JSON.stringify(data));
             }).catch(err=>{
