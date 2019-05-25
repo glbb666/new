@@ -34,6 +34,14 @@ server.use(cookieParser('secret'));
             keys:arr,//设置session密钥
             name:'user'//加密的cookie的名字,存储的是一个session_id,最后通过这个来在服务端查找到对应的人
         }))
+        server.all('*', function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "X-Requested-With");
+            res.header("Access-Control-Allow-Methods","PUT,POST,GET,DELETE,OPTIONS");
+            res.header("X-Powered-By",' 3.2.1');
+            res.header("Content-Type", "application/json;charset=utf-8");
+            next();
+         });
 })();
 let pool = mysql.createPool({
     //创建的最大连接数
@@ -63,7 +71,7 @@ server.use('/weekly_war/task/deleteTask.do',cbFn.deleteTask(pool))
 //退出接口
 server.use('/weekly_war/user/logout.do',cbFn.logout())
 //获取个人信息接口
-server.use('/weekly_war/user/getUser.do',cnFn.getInfo())
+server.use('/weekly_war/user/getUser.do',cbFn.getInfo(pool))
 //修改个人信息接口
-server.use('/weekly_war/user/updateUserSim.do',cbFn.modifyInfo())
+server.use('/weekly_war/user/updateUserSim.do',cbFn.modifyInfo(pool))
 //修改密码接口

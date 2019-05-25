@@ -97,15 +97,17 @@ module.exports = {
                             //给跳转之后的页面设置cookie
                             //登陆成功之后,设置cookie
                             // req.secret = 'secret';
-                            res.cookie('user',result[0].user_id,{
-                                //因为path为绝对路径
-                                //只有匹配到相应的path,才会设置上cookie
-                                path:'/',//默认值为'/'
-                                maxAge:30*24*3600*1000,
-                                signed:true
-                            }); 
+                            // res.cookie('user',result[0].user_id,{
+                            //     //因为path为绝对路径
+                            //     //只有匹配到相应的path,才会设置上cookie
+                            //     path:'/',//默认值为'/'
+                            //     maxAge:30*24*3600*1000,
+                            //     signed:true
+                            // }); 
+                            console.log(req.session);
                             if(!req.session['id']){
-                                req.session['id'] = result[0].user_id;     
+                                req.session['id'] = result[0].user_id;
+                                console.log(req.session,101);
                             }
                         }else{
                             data = {
@@ -149,6 +151,7 @@ module.exports = {
         //sessionOk检测发来的请求有没有session值,如果有的话，才开放对'/weekly_war/task/getTasks.do'接口的请求。 
         return function(req,res){
             console.log('快捷');
+            console.log(req.session);
             let data = {};
             // console.log(Object.entries(req.session))
             // if(req.session['id']){
@@ -238,23 +241,17 @@ module.exports = {
         return function(req,res){
             console.log("自己的所有:")
             console.log(req.body);
-            //可以获取到page和Params;
-            // let page = req.body.pageParams.page;
-            // let pageSize = req.body.pageParams.pageSize;
             let data;
             let selectSql = myselfSql.select('content',"*","user_id="+req.body["userId"]);
 
             let promise = poolP.poolPromise(pool,selectSql);
             promise.then(result=>{
                 let length = result.length;
-                // result = result.slice((page-1)*pageSize,page*pageSize);
                 data = {
                     msg:"获取成功",
                     code:2000,
                     success:true,
                     tasks:result,
-                    // total:length
-                    // totalPage:Math.ceil(length/pageSize)
                 }
                 res.send(JSON.stringify(data));
             }).catch(err=>{
@@ -291,21 +288,25 @@ module.exports = {
             res.clearCookie('user');
             res.redirect(302,'http://localhost:8080/#/login');
         }
-    },
-    getInfo(){
+    }, 
+    getInfo(pool){
         return function(req,res){
             let data = {};
-            let searchSql = myselfSql('user','*','user_id='+req.session.id);
-            let promise = poolP.poolPromise(searchSql);
+            console.log(req.session)
+            console.log(req.cookies)
+            let searchSql = myselfSql.select('user','*','user_id='+req.session.id);
+            let promise = poolP.poolPromise(pool,searchSql);
             promise.then(result=>{
-                console.log(result);
+                let user = result[0];
                 data = {
                     msg:"获取成功",
                     code:2000,
                     success:true,
+                    user:user
                 }
                 res.send(JSON.stringify(data));
             }).catch(err=>{
+                console.log(err);
                 data = {
                     msg:"获取失败",
                     code:5000,
@@ -316,7 +317,29 @@ module.exports = {
             
         }
     },
-    modiInfo(){
-
+    modifyInfo(pool){
+        return function(req,res){
+            console.log(req.query);
+            let user = req.query;
+            let updateSql = myselfSql.update('user',['user_email','user_phone','user_state','user_professionalClass','user_learningDirection','user_address','user_name'],[user.email,user.tel,user.state,user.professionalClass,user.learningDirection,user.address,user.userName],'user_id='+req.session.id);
+            let promise = poolP.poolPromise(pool,updateSql);
+            let data;
+            promise.then(result=>{
+                data = {
+                    success:true,
+                    code:2000,
+                    msg:'插入成功'
+                }
+                res.send(JSON.stringify(data));
+            }).catch(err=>{
+                console.log(err);
+                data = {
+                    success:false,
+                    code:5000, 
+                    msg:'插入失败'
+                }
+                res.send(JSON.stringify(data));
+            })
+        }
     }
 }

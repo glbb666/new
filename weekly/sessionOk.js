@@ -5,7 +5,8 @@ module.exports = function(){
     return function(req, res, next) {
         if (!req.session['id']) {
             res.redirect('http://localhost:8080/#/login');
-            // console.log(req);
+            console.log(111);
+            // res.end();
         } else {
             next();
         }
