@@ -71,7 +71,6 @@ module.exports = {
         return function(req,res){
             console.log("登录:");
             console.log(req.body);
-            
             //当登陆的时候,调取数据库中user表的内容,如果表中的内容存在,那么说明这个用户已经注册过了,那么我们就验证用户输入的密码和数据库中的密码是否匹配,如果匹配的话,那么就让用户登录成功,并且给客户端设置一个cookie,否则用户登陆失败.
             let user = req.body;
             let data = {};
@@ -105,7 +104,7 @@ module.exports = {
                                 maxAge:30*24*3600*1000,
                                 signed:true
                             }); 
-                            if(typeof req.session['login'] == 'undefined'){
+                            if(!req.session['id']){
                                 req.session['id'] = result[0].user_id;     
                             }
                         }else{
@@ -285,5 +284,39 @@ module.exports = {
                 res.send(JSON.stringify(data));
             })
         }
+    },
+    logout(){
+        return function(req,res){
+            req.session.id = null;
+            res.clearCookie('user');
+            res.redirect(302,'http://localhost:8080/#/login');
+        }
+    },
+    getInfo(){
+        return function(req,res){
+            let data = {};
+            let searchSql = myselfSql('user','*','user_id='+req.session.id);
+            let promise = poolP.poolPromise(searchSql);
+            promise.then(result=>{
+                console.log(result);
+                data = {
+                    msg:"获取成功",
+                    code:2000,
+                    success:true,
+                }
+                res.send(JSON.stringify(data));
+            }).catch(err=>{
+                data = {
+                    msg:"获取失败",
+                    code:5000,
+                    success:false
+                }
+                res.send(JSON.stringify(data));
+            })
+            
+        }
+    },
+    modiInfo(){
+
     }
 }

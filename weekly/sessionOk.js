@@ -4,11 +4,8 @@
 module.exports = function(){
     return function(req, res, next) {
         if (!req.session['id']) {
-            res.send(JSON.stringify({
-                msg:"未登录",
-                code:1000,
-                success:false
-            }));
+            res.redirect('http://localhost:8080/#/login');
+            // console.log(req);
         } else {
             next();
         }

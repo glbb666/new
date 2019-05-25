@@ -60,4 +60,10 @@ server.use('/weekly_war/task/addTask.do',cbFn.addTask(pool))
 server.use('/weekly_war/task/getAllTasksByUserId.do',cbFn.allTasks(pool))
 //删除周报接口
 server.use('/weekly_war/task/deleteTask.do',cbFn.deleteTask(pool))
-//数据库连接池操作函数
+//退出接口
+server.use('/weekly_war/user/logout.do',cbFn.logout())
+//获取个人信息接口
+server.use('/weekly_war/user/getUser.do',cnFn.getInfo())
+//修改个人信息接口
+server.use('/weekly_war/user/updateUserSim.do',cbFn.modifyInfo())
+//修改密码接口
