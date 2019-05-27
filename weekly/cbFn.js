@@ -104,11 +104,12 @@ module.exports = {
                             //     maxAge:30*24*3600*1000,
                             //     signed:true
                             // }); 
-                            console.log(req.session);
-                            if(!req.session['id']){
+                            // console.log(req.session);
+                            // if(!req.session['id']){
+                                //问题:旧的session['id']会被新的覆盖
                                 req.session['id'] = result[0].user_id;
-                                console.log(req.session,101);
-                            }
+                                // console.log(req.session,101);
+                            // }
                         }else{
                             data = {
                                 msg:"账户或密码错误",
@@ -168,13 +169,13 @@ module.exports = {
                     /* 
                         这里的curdata()取得的一周是从周日开始到周六,而我想获得的一周是从周一开始到周日,也就是curdata()加一天。我首先想到的是,我可以用明天作为一周的基准 ,但是我发现YEARWEEK(DATE_SUB(curdate(),INTERVAL -1 DAY))没有起作用,于是我修改了一下时间戳,因为时间戳的单位为毫秒,所以我让时间戳减去一天等于本周(星期日到星期六)。这样的话,相当于时间戳不减去一天等于本周(星期一到星期天)
                     */
-                    let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())-1;");
+                    let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())-1 and user_id="+req.session.id);
         
                    //本周：从周日开始到周六
-                    let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate());");
+                    let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate()) and user_id="+req.session.id);
         
                 
-                    let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())+1;");
+                    let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())+1 and user_id="+req.session.id);
         
                     Promise.all(poolP.poolPromise(pool,[lastSQL,thisSQL,nextSQL])).then(result=>{
                         //这里面的内容只会执行一次
@@ -242,10 +243,11 @@ module.exports = {
             console.log("自己的所有:")
             console.log(req.body);
             let data;
-            let selectSql = myselfSql.select('content',"*","user_id="+req.body["userId"]);
+            let selectSql = myselfSql.select('content left join user on content.user_id=user.user_id',"content.*,user.*","content.user_id="+req.session.id);
 
             let promise = poolP.poolPromise(pool,selectSql);
             promise.then(result=>{
+                console.log(result);
                 let length = result.length;
                 data = {
                     msg:"获取成功",
@@ -254,6 +256,18 @@ module.exports = {
                     tasks:result,
                 }
                 res.send(JSON.stringify(data));
+            }).catch(err=>{
+                console.log(err);
+            })
+        }
+    },
+    allOtherTasks(pool){
+        return function(req,res){
+            let data = {};
+            let searchSql = myselfSql.select('content left join user on content.user_id=user.user_id',"content.*,user.*","content.user_id<>"+req.session.id);
+            let promise = poolP.poolPromise(pool,searchSql);
+            promise.then(result=>{
+                console.log(result);
             }).catch(err=>{
                 console.log(err);
             })
@@ -337,6 +351,32 @@ module.exports = {
                     success:false,
                     code:5000, 
                     msg:'插入失败'
+                }
+                res.send(JSON.stringify(data));
+            })
+        }
+    },
+    modifyPassword(pool){
+        return function(req,res){
+            let password = req.query;
+            console.log(req.query);
+            let updateSql = myselfSql.update('user',['user_password'],[password.newPassword],'user_id='+req.session.id+' and user_password='+password.oldPassword);
+            let promise = poolP.poolPromise(pool,updateSql);
+            let data;
+            promise.then(result=>{
+                console.log('修改成功');
+                data = {
+                    success:true,
+                    code:2000,
+                    msg:'修改成功'
+                };
+                res.send(JSON.stringify(data));
+            }).catch(err=>{
+                console.log(err);
+                data = {
+                    success:false,
+                    code:5000,
+                    msg:'修改失败'
                 }
                 res.send(JSON.stringify(data));
             })

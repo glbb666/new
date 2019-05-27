@@ -66,6 +66,8 @@ server.use('/weekly_war/task/getTasks.do',cbFn.quick(pool));
 server.use('/weekly_war/task/addTask.do',cbFn.addTask(pool))
 //获取自己所有周报接口
 server.use('/weekly_war/task/getAllTasksByUserId.do',cbFn.allTasks(pool))
+//获取他人周报接口
+server.use('/weekly_war/task/getAllTasks.do',cbFn.allOtherTasks(pool))
 //删除周报接口
 server.use('/weekly_war/task/deleteTask.do',cbFn.deleteTask(pool))
 //退出接口
@@ -75,3 +77,4 @@ server.use('/weekly_war/user/getUser.do',cbFn.getInfo(pool))
 //修改个人信息接口
 server.use('/weekly_war/user/updateUserSim.do',cbFn.modifyInfo(pool))
 //修改密码接口
+server.use('/weekly_war/user/updateUserPassword.do',cbFn.modifyPassword(pool))
