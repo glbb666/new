@@ -76,7 +76,7 @@ module.exports = {
             let data = {};
             if(user.email){
                 //注意:如果要进行字符串比较,这里的user.email必须被双引号包住
-                let searchSql = myselfSql.select('user',['user_email','user_password','user_id','user_status'], 'user_email="'+user.email+'"');
+                let searchSql = myselfSql.select('user',['user_email','user_password','user_id','user_status','user_learningDirection'], 'user_email="'+user.email+'"');
                 // console.log(searchSql);
                 let promise = poolP.poolPromise(pool,searchSql);
                 promise.then(result=>{
@@ -110,6 +110,7 @@ module.exports = {
                                 //问题:旧的session['id']会被新的覆盖
                                 req.session['id'] = result[0].user_id;
                                 req.session['status'] = result[0].user_status;
+                                req.session['learningDirection'] = result[0].user_learningDirection
                                 // console.log(req.session,101);
                             // }
                         }else{
@@ -391,25 +392,13 @@ module.exports = {
             let where;
             let data;
             if(req.session.status==='big_administor'){
-                keys = ['user_email','user_state','user_status'];
+                keys = ['user_id','user_email','user_state','user_status'];
                 console.log('大管理员');
                 where = 'user_id<>'+req.session.id;
-                data={
-                    success:false,
-                    msg:'大管理员',
-                    code:'2000'
-                }
-                res.send(JSON.stringify(data))
             }else if(req.session.status === 'administor'){
-                keys = ['user_email','user_state'];
+                keys = ['user_id','user_email','user_state'];
                 console.log('管理员');
-                where = 'user_status=NULL';
-                data={
-                    success:false,
-                    msg:'管理员',
-                    code:'2000'
-                }
-                res.send(JSON.stringify(data))
+                where = 'user_status is null and user_learningDirection=\''+req.session['learningDirection']+'\'';
             }else{
                 data={
                     success:false,
@@ -422,9 +411,116 @@ module.exports = {
             let searchSql = myselfSql.select('user',keys,where);
             let promise = poolP.poolPromise(pool,searchSql);
             promise.then(result=>{
-                console.log(result);
+                    data={
+                        success:true,
+                        msg:'获取成功',
+                        code:'2000',
+                        user:result
+                    }
+                    res.send(JSON.stringify(data))
+                }).catch(err=>{
+                data={
+                        success:false,
+                        msg:'服务器错误',
+                        code:'5000'
+                    }
+                    res.send(JSON.stringify(data))
+                    console.log(err);
+            })
+        }
+    },
+    updateUser(pool){
+        return function(req,res){
+            console.log(req.query);
+            let user = req.query;
+            let data;
+            let keys;
+            let values;
+            if(req.session['status']==='big_administor'){
+                //大管理员可以设置管理员
+                keys = ['user_email','user_status','user_state','user_password'];
+                values = [user.email,user.status,user.state,'123456'];
+            }else if(req.session['status']==='administor'){
+                keys = ['user_email','user_state','user_password'];
+                values = [user.email,user.state,'123456'];
+            }else{
+                //非管理员身份无法调用接口
+                res = res.data;
+                if(res.code==='2000'){
+                  console.log('获取成功');
+                  this.list = res.user;
+                  this.initial(this.list);
+                }else if(res.code === '1002'){
+                  alert('非管理员');
+                }else if(res.code === '5000'){
+                  alert('服务器错误');
+                }
+                res.send(JSON.stringify(data));
+                return;
+            }
+            if(user.reset==='false'){
+                //重设密码
+                keys.pop();
+                values.pop();
+            }
+            let updateSql = myselfSql.update('user',keys,values,'user_id='+user.id)
+            let promise = poolP.poolPromise(pool,updateSql);
+            promise.then(result=>{
+                data = {
+                    success:true,
+                    code:"2000",
+                    msg:'修改成功'
+                }
+                res.send(JSON.stringify(data));
             }).catch(err=>{
                 console.log(err);
+                data = {
+                    success:false,
+                    code:"5000",
+                    msg:'服务器错误'
+                }
+                res.send(JSON.stringify(data));
+            })
+        }
+    },
+    deleteUser(pool){
+        return function(req,res){
+            console.log(req.query);
+            let user = req.query;
+            let data;
+            if(req.session['status']==='big_administor'){ 
+                //大管理员可以删除所有人
+                where = 'user_id='+user.id;
+            }else if(req.session['status']==='administor'){
+                //普通管理员可以删除同组非管理员的人
+                where = 'user_id='+user.id+' and user_learningDirection=\''+req.session['learningDirection']+'\''
+            }else{
+                //非管理员身份无法调用接口
+                data = {
+                    code:"1002",
+                    success:false,
+                    msg:'非管理员'
+                }
+                res.send(JSON.stringify(data));
+                return;
+            }
+            let deleteSql = myselfSql.del('user',where);
+            let promise = poolP.poolPromise(pool,deleteSql);
+            promise.then(result=>{
+                data = {
+                    success:true,
+                    msg:'删除成功',
+                    code:'2000'
+                }
+                res.send(JSON.stringify(data));
+            },err=>{
+                console.log(err);
+                data = {
+                    success:false,
+                    code:'5000',
+                    msg:'服务器错误'
+                }
+                res.send(JSON.stringify(data))
             })
         }
     }

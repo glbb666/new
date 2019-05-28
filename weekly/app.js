@@ -75,8 +75,13 @@ server.use('/weekly_war/user/logout.do',cbFn.logout())
 //获取个人信息接口
 server.use('/weekly_war/user/getUser.do',cbFn.getInfo(pool))
 //修改个人信息接口
-server.use('/weekly_war/user/updateUserSim.do',cbFn.modifyInfo(pool))
+server.use('/weekly_war/user/updateUser.do',cbFn.modifyInfo(pool))
 //修改密码接口
 server.use('/weekly_war/user/updateUserPassword.do',cbFn.modifyPassword(pool))
-//用户管理接口
+//获取用户接口
 server.use('/weekly_war/user/getAllUser.do',cbFn.getAllUser(pool))
+//修改用户接口
+server.use('/weekly_war/user/updateUserSim.do',
+cbFn.updateUser(pool))
+//删除用户接口
+server.use('/weekly_war/user/deleteUser.do',cbFn.deleteUser(pool))
