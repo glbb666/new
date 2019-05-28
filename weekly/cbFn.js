@@ -76,7 +76,7 @@ module.exports = {
             let data = {};
             if(user.email){
                 //注意:如果要进行字符串比较,这里的user.email必须被双引号包住
-                let searchSql = myselfSql.select('user',['user_email','user_password','user_id'], 'user_email="'+user.email+'"');
+                let searchSql = myselfSql.select('user',['user_email','user_password','user_id','user_status'], 'user_email="'+user.email+'"');
                 // console.log(searchSql);
                 let promise = poolP.poolPromise(pool,searchSql);
                 promise.then(result=>{
@@ -91,7 +91,8 @@ module.exports = {
                                 success:true,
                                 user:{
                                     id:result[0].user_id,
-                                    userName:result[0].user_email
+                                    userName:result[0].user_email,
+                                    administor:result[0].user_status
                                 }
                             };
                             //给跳转之后的页面设置cookie
@@ -108,6 +109,7 @@ module.exports = {
                             // if(!req.session['id']){
                                 //问题:旧的session['id']会被新的覆盖
                                 req.session['id'] = result[0].user_id;
+                                req.session['status'] = result[0].user_status;
                                 // console.log(req.session,101);
                             // }
                         }else{
@@ -379,6 +381,50 @@ module.exports = {
                     msg:'修改失败'
                 }
                 res.send(JSON.stringify(data));
+            })
+        }
+    },
+    getAllUser(pool){
+        return function(req,res){
+            //获取全部的用户
+            let keys = [];
+            let where;
+            let data;
+            if(req.session.status==='big_administor'){
+                keys = ['user_email','user_state','user_status'];
+                console.log('大管理员');
+                where = 'user_id<>'+req.session.id;
+                data={
+                    success:false,
+                    msg:'大管理员',
+                    code:'2000'
+                }
+                res.send(JSON.stringify(data))
+            }else if(req.session.status === 'administor'){
+                keys = ['user_email','user_state'];
+                console.log('管理员');
+                where = 'user_status=NULL';
+                data={
+                    success:false,
+                    msg:'管理员',
+                    code:'2000'
+                }
+                res.send(JSON.stringify(data))
+            }else{
+                data={
+                    success:false,
+                    msg:'没有权限访问',
+                    code:'1002'
+                }
+                res.send(JSON.stringify(data))
+                return;
+            }
+            let searchSql = myselfSql.select('user',keys,where);
+            let promise = poolP.poolPromise(pool,searchSql);
+            promise.then(result=>{
+                console.log(result);
+            }).catch(err=>{
+                console.log(err);
             })
         }
     }

@@ -78,3 +78,5 @@ server.use('/weekly_war/user/getUser.do',cbFn.getInfo(pool))
 server.use('/weekly_war/user/updateUserSim.do',cbFn.modifyInfo(pool))
 //修改密码接口
 server.use('/weekly_war/user/updateUserPassword.do',cbFn.modifyPassword(pool))
+//用户管理接口
+server.use('/weekly_war/user/getAllUser.do',cbFn.getAllUser(pool))
