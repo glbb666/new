@@ -22,14 +22,15 @@ module.exports = {
         }
     },
     //改
+
     update(table,keys,values,where){
         for(let i = 0;i<values.length;i++){
             keys[i] = keys[i]+"='"+values[i]+"'";
         }
         if(where){
-            return 'UPDATE '+table+" SET "+keys.join(",")+' WHERE '+where;
+            return 'UPDATE '+table+" SET "+keys.join(',')+' WHERE '+where;
         }else{
-            return 'UPDATE '+table+" SET "+keys.join(",");
+            return 'UPDATE '+table+" SET "+keys.join(',');
         }
     },
     //查

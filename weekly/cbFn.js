@@ -172,10 +172,10 @@ module.exports = {
                     /* 
                         这里的curdata()取得的一周是从周日开始到周六,而我想获得的一周是从周一开始到周日,也就是curdata()加一天。我首先想到的是,我可以用明天作为一周的基准 ,但是我发现YEARWEEK(DATE_SUB(curdate(),INTERVAL -1 DAY))没有起作用,于是我修改了一下时间戳,因为时间戳的单位为毫秒,所以我让时间戳减去一天等于本周(星期日到星期六)。这样的话,相当于时间戳不减去一天等于本周(星期一到星期天)
                     */
-                    let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())-1 and user_id="+req.session.id);
+                    let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())-1 and user_id="+req.session.id+" order by weekly_taskData");
         
                    //本周：从周日开始到周六
-                    let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate()) and user_id="+req.session.id);
+                    let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate()) and user_id="+req.session.id)+"  order by weekly_taskData";
         
                 
                     let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())+1 and user_id="+req.session.id);
@@ -214,6 +214,43 @@ module.exports = {
             let insertSql = myselfSql.insert('content',['weekly_taskData','weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming','weekly_id','user_id'],[week.taskDate,week.taskName,week.content,Number(week.timeDegree),week.timeConsuming,0,week.timeId]);
             // console.log(insertSql);
             let promise = poolP.poolPromise(pool,insertSql);
+            promise.then(result=>{
+                data = {
+                    msg:"插入成功",
+                    code:2000,
+                    success:true,
+                }
+                res.send(JSON.stringify(data));
+            }).catch(err=>{
+                console.log(err);
+                console.log(err.sqlState);
+                if(err.sqlState==22007){
+                    data = {
+                        msg:"日期的格式有问题",
+                        code:1004,
+                        success:false
+                    }
+                }else{
+                    data = {
+                        msg:"服务器错误",
+                        code:5000,
+                        success:false
+                    }
+                }
+                res.send(JSON.stringify(data));
+            })
+        }
+    },
+    updateTask(pool){
+        return function(req,res){
+            //在数据库中建一张表存储周报
+            console.log('修改');
+            console.log(req.query);
+            let week = req.query;
+            week.taskDate = Date.parse(week.taskDate);
+            let updateSql = myselfSql.update('content',['weekly_taskName','weekly_content','weekly_completeDegree','weekly_timeConsuming'],[week.taskName,week.content,week.timeDegree,week.timeConsuming],'user_id='+req.session['id']+' and weekly_id='+week.weekId);
+            // console.log(insertSql);
+            let promise = poolP.poolPromise(pool,updateSql);
             promise.then(result=>{
                 data = {
                     msg:"插入成功",
