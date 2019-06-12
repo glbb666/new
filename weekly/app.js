@@ -63,6 +63,8 @@ server.post('/weekly_war/user/login.do',cbFn.login(pool));
 // server.use(sessionOk());
 //获取三周周报接口
 server.use('/weekly_war/task/getTasks.do',cbFn.quick(pool));
+//获取某一周周报接口
+server.use('/weekly_war/task/getOneTask.do',cbFn.oneTask(pool));
 //添加周报接口
 server.use('/weekly_war/task/addTask.do',cbFn.addTask(pool))
 //修改周报接口

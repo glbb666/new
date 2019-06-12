@@ -172,13 +172,13 @@ module.exports = {
                     /* 
                         这里的curdata()取得的一周是从周日开始到周六,而我想获得的一周是从周一开始到周日,也就是curdata()加一天。我首先想到的是,我可以用明天作为一周的基准 ,但是我发现YEARWEEK(DATE_SUB(curdate(),INTERVAL -1 DAY))没有起作用,于是我修改了一下时间戳,因为时间戳的单位为毫秒,所以我让时间戳减去一天等于本周(星期日到星期六)。这样的话,相当于时间戳不减去一天等于本周(星期一到星期天)
                     */
-                    let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())-1 and user_id="+req.session.id+" order by weekly_taskData");
+                    let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData)/1000),'%Y-%m-%d'),1) = YEARWEEK(now(),1)-1 and user_id="+req.session.id+" order by weekly_taskData");
         
                    //本周：从周日开始到周六
-                    let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate()) and user_id="+req.session.id)+"  order by weekly_taskData";
+                    let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData)/1000),'%Y-%m-%d'),1) = YEARWEEK(curdate(),1) and user_id="+req.session.id)+"  order by weekly_taskData";
         
                 
-                    let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())+1 and user_id="+req.session.id);
+                    let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData)/1000),'%Y-%m-%d'),1) = YEARWEEK(curdate(),1)+1 and user_id="+req.session.id);
         
                     Promise.all(poolP.poolPromise(pool,[lastSQL,thisSQL,nextSQL])).then(result=>{
                         //这里面的内容只会执行一次
@@ -202,6 +202,44 @@ module.exports = {
                         res.send(JSON.stringify(data));
                     });     
                 // console.log(data);
+        }
+    },
+    oneTask(pool){
+        return function(req,res){
+            console.log('某一周');
+            console.log(req.session);
+            console.log(req.query)
+            let time = req.query.weektime;
+            let data = {};
+            let lastSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData)/1000),'%Y-%m-%d'),1) = "+time+" and user_id="+163+" order by weekly_taskData");
+            //本周：从周日开始到周六
+            // let thisSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate()) and user_id="+req.session.id)+"  order by weekly_taskData";
+
+        
+            // let nextSQL = myselfSql.select('content',"*","YEARWEEK(date_format(from_unixtime((weekly_taskData-24*3600)/1000),'%Y-%m-%d')) = YEARWEEK(curdate())+1 and user_id="+req.session.id);
+            let promise = poolP.poolPromise(pool,lastSQL);
+            promise.then(result=>{
+                //这里面的内容只会执行一次
+                console.log(result);
+                data={
+                    msg:"成功",
+                    code:2000,
+                    success:true,
+                    Task:result
+                    // thisTask:result[1],
+                    // nextTask:result[2]
+                }
+                res.send(JSON.stringify(data));
+            }).catch(e=>{
+                console.log(e)
+                data={
+                    msg:"服务器错误",
+                    code:5000,
+                    success:false,
+                }
+                res.send(JSON.stringify(data));
+            });     
+            // console.log(data);
         }
     },
     addTask(pool){
