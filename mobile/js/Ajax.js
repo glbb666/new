@@ -249,13 +249,12 @@ function isVcode(vcode){
 }
 //检查学号
 function isID(id) {
-    var idReg = /^\d{8}$/;
+    var idReg = /^0\d{7}$/;
     if (!idReg.test(id)) {
         return false;
     } else {
         return true;
     };
-
 };
 //检查密码
 function isPass(pass){

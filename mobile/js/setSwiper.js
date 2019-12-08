@@ -94,7 +94,6 @@ window.onload=function(){
     slideArrows(swiperV);
 };
 function aLLClick(){
-    // 下面为罗萍写：
     $('#toSign').click(function(){
         var username = $('#username').val();
         var pass = $('#pass').val();

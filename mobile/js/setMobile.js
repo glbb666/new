@@ -92,7 +92,6 @@ mobile.supportOrientationchange = defaultConfig.supportOrientationchange;
         viewportEl.setAttribute('content', content);
         document.head.appendChild(viewportEl);
     }
-
 })();
 
 // 手机内的px值转为rem
@@ -121,10 +120,11 @@ mobile.mresize = function () {
         var innerHeight = window.innerHeight;
         if (innerWidth > innerHeight) {
             // 横屏 宽度大于高度
+
             mobile.innerWidth = innerHeight;
             // classList 属性返回元素的类名,classList只读，但是可以通过add，remove方法修改它
             // 通过了css提前写好的class样式直接添加
-            document.body.classList.add('mb-rotate');
+            // document.body.classList.add('mb-rotate');
             // body宽度设为设计稿宽度除以100的rem
             document.body.style.width = mobile.designWidth / 100 + 'rem';
             // 高度设为获取到的之前定的宽度
